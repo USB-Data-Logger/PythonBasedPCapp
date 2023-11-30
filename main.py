@@ -128,7 +128,7 @@ class COMLoggerApp(App):
     count = NumericProperty(0)
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.file_name_template = "%Y_%m_%d_%H.%M.%S%f"
+        self.file_name_template = "%Y_%m_%d_%H.%M.%S.%f"
     def build(self):
         return Builder.load_string(kv)
 
