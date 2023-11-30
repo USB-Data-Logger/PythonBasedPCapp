@@ -1,8 +1,5 @@
-
-# PythonBasedPCapp
-
-In this repo I will upload a basic stand alone app that is made in Python using chatgpt & other programers
-
+# Python Based PC App
+In this repo  I will upload a basic stand alone app that is made in Python using chatgpt &amp; other programers 
 
 ## Table of Contents
 
@@ -118,5 +115,3 @@ Your release binary can be hosted on platforms like GitHub Releases. Provide a l
 ## License
 
 This project is licensed under the [GNU General Public License (GPL)](LICENSE).
-
-
