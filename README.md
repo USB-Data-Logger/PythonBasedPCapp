@@ -34,7 +34,9 @@ Briefly describe your project here.
 Clone the repository:
 
 ```bash
-git clone https://github.com/jagannathhari/PythonBasedPCapp.git```
+git clone https://github.com/jagannathhari/PythonBasedPCapp.git
+
+```
 
 Navigate to the project directory:
 
