@@ -238,7 +238,7 @@ class COMLoggerApp(App):
 
                     now = datetime.now()
                     date = now.strftime("%Y-%m-%d")
-                    time = now.strftime("%H:%M:%S_%f")[:-3]
+                    time = now.strftime("%H:%M:%S.%f")[:-3]
 
                     data = [date,time] +  data.split(",")
                     
