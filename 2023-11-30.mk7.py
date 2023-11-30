@@ -83,8 +83,9 @@ class SerialMonitor:
     def get_file_name(self):
         date_prefix = datetime.now().strftime("%Y-%m-%d %H.%M.%S.%f")[:-3]
         file_suffix = tkinter.simpledialog.askstring("File Suffix", "Enter file suffix (or leave empty):")
-        file_suffix = f".{file_suffix}" if file_suffix else ""
-        file_name = f"{date_prefix}-{file_suffix.replace('.', '')}.csv"
+        file_suffix = f"{file_suffix}" if file_suffix else ""
+        #file_name = f"{date_prefix}-{file_suffix.replace('.', '')}.csv"
+        file_name = f"{date_prefix} {file_suffix}.csv" #  pampam mod 
         return filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV Files", "*.csv")], initialfile=file_name)
 
 
