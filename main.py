@@ -3,7 +3,7 @@ import csv
 import threading
 import serial
 from kivy.app import App
-from kivy.properties import BooleanProperty, NumericProperty
+from kivy.properties import BooleanProperty, NumericProperty,StringProperty
 
 
 
@@ -31,19 +31,29 @@ class SerialCommunicator:
 class COMLoggerApp(App):
     is_logging = BooleanProperty(False)
     count = NumericProperty(0)
+    file_name = StringProperty()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.serial_communicator = SerialCommunicator()
-        self.file_name_template = "%Y_%m_%d_%H.%M.%S.%f"
+        self.file_name_template = "%Y-%m-%d %H.%M.%S.%f"
 
     def update_file_name_prefix(self):
         self.root.ids.lbl_file_prefix.text = (
-            self.filename_from_template(self.file_name_template) + "-"
+            self.filename_from_template(self.file_name_template)
         )
+
+        self.txt_suffix_on_text()
 
     def on_start(self):
         self.update_file_name_prefix()
+
+    def txt_suffix_on_text(self):
+        suffix = self.root.ids.txt_suffix.text
+        if suffix:
+            self.root.ids.lbl_filename.text = self.root.ids.lbl_file_prefix.text + " "+ suffix+".csv"
+        else:
+            self.root.ids.lbl_filename.text = self.root.ids.lbl_file_prefix.text+".csv"
 
     def filename_from_template(self, template):
         current_time = datetime.now()
@@ -137,7 +147,6 @@ class COMLoggerApp(App):
                 self.csv_writer.writerow(data)
                 if self.count % 10 == 0:
                     self.csv_file.flush()
-
 
 if __name__ == "__main__":
     COMLoggerApp().run()

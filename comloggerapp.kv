@@ -74,19 +74,19 @@ BoxLayout:
         TextInput:
             disabled: True if app.is_logging else False
             id: txt_suffix
-            text: "data"
             size_hint: None, None
             height: self.minimum_height
             width: dp(200)
             hint_text: "suffix"
             font_size: sp(font_size)
             multiline: False
+            on_text: app.txt_suffix_on_text()
         Button:
             text: "Refresh"
             on_release: app.update_file_name_prefix()
+
     CustomLabel:
         id: lbl_filename
-        text: lbl_file_prefix.text + txt_suffix.text + ".csv"
         size_hint_x: 1
     CustomLabel:
         text: "Total " + str(app.count) + " Rows written" if app.count else ""
