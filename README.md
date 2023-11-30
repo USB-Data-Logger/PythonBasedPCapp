@@ -26,8 +26,8 @@ Briefly describe your project here.
 
 ## Prerequisites
 
-- Python 3.x installed
-- Git installed (if your project is hosted on a Git repository)
+- Python 3.7 and above installed
+- Git installed
 
 ## Installation
 
@@ -41,7 +41,7 @@ git clone https://github.com/jagannathhari/PythonBasedPCapp.git
 Navigate to the project directory:
 
 ```bash
-cd your-repo
+cd PythonBasedPCapp
 ```
 
 Install dependencies:
