@@ -1,0 +1,102 @@
+
+#:import utils libs.utils
+#:set font_size 20
+#:set padding 10
+
+<CustomOption@SpinnerOption>:
+    font_size: sp(font_size)
+
+<CustomSpinner@Spinner>:
+    disabled: True if app.is_logging else False
+    font_size: sp(font_size)
+    option_cls: "CustomOption"
+    size_hint_y: None
+    height: dp(50)
+
+<CustomLabel@Label>:
+    font_size: sp(font_size)
+    size_hint: None, 1
+    width: self.texture_size[0] + dp(padding)
+
+<CustomBoxLayout@BoxLayout>:
+    size_hint: 1, None
+    height: self.minimum_height
+    spacing: dp(padding)
+    padding: [dp(padding), dp(padding), dp(padding), dp(padding)]
+
+BoxLayout:
+    orientation: 'vertical'
+    spacing: 10
+    padding: 10
+    CustomBoxLayout:
+        CustomLabel:
+            text: "Com port"
+        CustomSpinner:
+            disabled: True if app.is_logging or chk_custom_port.active else False
+            id: port_spinner
+            values: utils.get_com_ports()
+            text: "Select port" if self.values else "No port"
+            on_text: app.drop_ports_text_changed(self)
+        CustomLabel:
+            text: "Baud Rate"
+        CustomSpinner:
+            id: baudrate_spinner
+            values: utils.get_standard_baud_rate()
+            text: "9600"
+    CustomBoxLayout:
+        CheckBox:
+            id: chk_custom_port
+            size_hint: None, 1
+            width: dp(10)
+            on_active: app.chk_custom_port_clicked(self, self.active)
+            active: False
+
+        CustomLabel:
+            text: "Custom port"
+        TextInput:
+            id: txt_custom_port
+            on_text: app.txt_custom_port_on_text(self)
+            disabled: True if app.is_logging or not chk_custom_port.active else False
+            hint_text: "Custom com port"
+            height: self.minimum_height
+            size_hint: None, None
+            font_size: sp(font_size)
+            multiline: False
+            width: dp(500)
+
+    CustomBoxLayout:
+        spacing: 0 
+        CustomLabel:
+            text: "File Name:- " 
+
+        CustomLabel:
+            id: lbl_file_prefix
+        TextInput:
+            disabled: True if app.is_logging else False
+            id: txt_suffix
+            text: "data"
+            size_hint: None, None
+            height: self.minimum_height
+            width: dp(200)
+            hint_text: "suffix"
+            font_size: sp(font_size)
+            multiline: False
+        Button:
+            text: "Refresh"
+            on_release: app.update_file_name_prefix()
+    CustomLabel:
+        id: lbl_filename
+        text: lbl_file_prefix.text + txt_suffix.text + ".csv"
+        size_hint_x: 1
+    CustomLabel:
+        text: "Total " + str(app.count) + " Rows written" if app.count else ""
+        size_hint_x: 1
+        disabled: btn_logging.disabled
+    Button:
+        id: btn_logging
+        disabled: True 
+        font_size: sp(20)
+        text: "Stop" if app.is_logging else "Start"
+        size_hint_y: None
+        height: 50
+        on_release: app.btn_logging_released(self)
