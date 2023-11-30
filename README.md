@@ -112,7 +112,7 @@ This will generate a `dist` directory containing the executable.
 
 Your release binary can be hosted on platforms like GitHub Releases. Provide a link to the latest release in this section.
 
-[Download Latest Release]https://github.com/jagannathhari/PythonBasedPCapp/releases/latest)
+[Download Latest Release](https://github.com/jagannathhari/PythonBasedPCapp/releases/latest)
 
 
 ## License
