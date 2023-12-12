@@ -1,104 +1,96 @@
 import tkinter as tk
-import tkinter.simpledialog
-from tkinter import filedialog
+from tkinter import ttk
 import serial
-import time
-import csv
 from datetime import datetime
+
+# Define colors for the dark theme
+dark_bg = "#2c2f33"
+light_text = "#ffffff"
+accent_color = "#7289da"
+button_bg = "#23272a"
 
 class SerialMonitor:
     def __init__(self, root):
         self.root = root
         self.root.title("Serial Monitor")
+        self.root.geometry("800x450")  # Set main window size to a 16:9 ratio
+        self.root.configure(bg=dark_bg)
 
         self.serial_port = None
-        self.baud_rate_var = tk.StringVar(root)
-        self.com_port_var = tk.StringVar(root)
-        self.file_name = ""
+        self.baud_rate_var = tk.StringVar(value="9600")
+        self.com_port_var = tk.StringVar(value="COM7")
+        self.file_suffix = tk.StringVar(value="")  # Variable to hold the user-entered suffix
+        self.monitoring = False  # Flag to control the monitoring state
 
         self.init_ui()
 
     def init_ui(self):
-        # Baud Rate Configuration
-        baud_rate_label = tk.Label(self.root, text="Baud Rate:")
-        baud_rate_label.pack(pady=5)
-        baud_rate_menu = tk.OptionMenu(self.root, self.baud_rate_var, "9600", "115200")
-        baud_rate_menu.pack(pady=5)
-        self.baud_rate_var.set("9600")  # Default baud rate
+        style = ttk.Style()
+        style.theme_use('clam')
+        style.configure('TLabel', background=dark_bg, foreground=light_text)
+        style.configure('TButton', background=button_bg, foreground=light_text)
+        style.configure('TEntry', background=dark_bg, foreground=light_text, fieldbackground="#43454a")
+        style.map('TButton', background=[('active', accent_color)], foreground=[('active', light_text)])
+        
+        ttk.Label(self.root, text="COM Port:").pack(pady=5)
+        ttk.Combobox(self.root, textvariable=self.com_port_var, values=[f"COM{i}" for i in range(10)]).pack(pady=5)
 
-        # COM Port Configuration
-        com_port_label = tk.Label(self.root, text="COM Port:")
-        com_port_label.pack(pady=5)
-        com_port_menu = tk.OptionMenu(self.root, self.com_port_var, *[f"COM{i}" for i in range(10)])
-        com_port_menu.pack(pady=5)
-        self.com_port_var.set("COM7")  # Default COM port
+        ttk.Label(self.root, text="Baud Rate:").pack(pady=5)
+        ttk.Combobox(self.root, textvariable=self.baud_rate_var, values=["9600", "19200", "38400", "57600", "115200"]).pack(pady=5)
 
-        # Monitoring Control Buttons
-        self.start_button = tk.Button(self.root, text="Start Monitoring", command=self.start_monitoring)
-        self.start_button.pack(pady=10)
+        ttk.Label(self.root, text="Suffix:").pack(pady=5)
+        self.file_suffix_entry = ttk.Entry(self.root, textvariable=self.file_suffix)
+        self.file_suffix_entry.pack(pady=5)
 
-        self.stop_button = tk.Button(self.root, text="Stop Monitoring", command=self.stop_monitoring, state=tk.DISABLED)
-        self.stop_button.pack(pady=10)
+        self.start_stop_button = ttk.Button(self.root, text="Start Monitoring", command=self.toggle_monitoring)
+        self.start_stop_button.pack(pady=10)
 
-        # Status Display Label
-        self.status_label = tk.Label(self.root, text="")
+        ttk.Button(self.root, text="Refresh", command=self.refresh_file_name).pack(pady=5)
+
+        self.status_label = ttk.Label(self.root, text="")
         self.status_label.pack(pady=10)
 
-    def start_monitoring(self):
-        # Start serial data monitoring
-        try:
-            self.file_name = self.get_file_name()
-            self.serial_port = serial.Serial(self.com_port_var.get(), int(self.baud_rate_var.get()))
-            self.start_button["state"] = tk.DISABLED
-            self.stop_button["state"] = tk.NORMAL
-            self.status_label["text"] = "Monitoring started"
-            self.root.after(100, self.read_serial_data)
-        except Exception as e:
-            self.status_label["text"] = f"Error: {e}"
-
-    def stop_monitoring(self):
-        # Stop serial data monitoring
-        if self.serial_port:
-            self.serial_port.close()
-            self.start_button["state"] = tk.NORMAL
-            self.stop_button["state"] = tk.DISABLED
+    def toggle_monitoring(self):
+        if not self.monitoring:
+            # Start monitoring
+            try:
+                self.serial_port = serial.Serial(self.com_port_var.get(), int(self.baud_rate_var.get()), timeout=1)
+                self.start_stop_button["text"] = "Stop Monitoring"
+                self.file_name = self.get_file_name()
+                self.monitoring = True
+                self.read_serial_data()
+            except serial.SerialException as e:
+                self.status_label["text"] = f"Error: {e}"
+        else:
+            # Stop monitoring
+            if self.serial_port and self.serial_port.is_open:
+                self.serial_port.close()
+            self.start_stop_button["text"] = "Start Monitoring"
+            self.monitoring = False
             self.status_label["text"] = "Monitoring stopped"
 
     def read_serial_data(self):
-        # Read and process serial data
-        if self.serial_port and self.serial_port.is_open:
-            try:
-                data = self.serial_port.readline().decode("utf-8").strip()
-                if data:  # Checking if data is not empty
-                    timestamp = datetime.now().strftime("%Y-%m-%d, %H:%M:%S.%f")[:-3]
-                    data_with_timestamp = f"{timestamp}, {data}\n"
-                    self.status_label["text"] = data_with_timestamp
-                    self.save_data_to_file(data_with_timestamp)
-                    self.root.after(100, self.read_serial_data)
-                else:
-                    self.status_label["text"] = "Invalid data received"
-                    self.root.after(100, self.read_serial_data)
-            except Exception as e:
-                self.status_label["text"] = f"Error: {e}"
-                self.root.after(100, self.read_serial_data)
-
-    def get_file_name(self):
-        # Get file name for saving data
-        date_prefix = datetime.now().strftime("%Y-%m-%d %H.%M.%S.%f")[:-3]
-        file_suffix = tkinter.simpledialog.askstring("File Suffix", "Enter file suffix (or leave empty):")
-        file_suffix = f"{file_suffix}" if file_suffix else ""
-        file_name = f"{date_prefix} {file_suffix}.csv"
-        return filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV Files", "*.csv")], initialfile=file_name)
+        if self.monitoring and self.serial_port and self.serial_port.is_open:
+            data = self.serial_port.readline()
+            if data:
+                timestamped_data = f"{datetime.now().strftime('%Y-%m-%d,%H:%M:%S.%f')[:-3]}, {data.decode().strip()}\n"
+                self.save_data_to_file(timestamped_data)
+            self.root.after(100, self.read_serial_data)
 
     def save_data_to_file(self, data):
-        # Save data to file
-        if self.file_name:
-            with open(self.file_name, "a", newline="") as file:
-                file.write(data)
+        with open(self.file_name, "a") as file:
+            file.write(data)
             self.status_label["text"] = f"Data saved to {self.file_name}"
 
-# Tkinter GUI initialization
+    def get_file_name(self):
+        current_time = datetime.now().strftime("%Y-%m-%d %H.%M.%S")
+        return f"{current_time} {self.file_suffix.get()}.csv"
+
+    def refresh_file_name(self):
+        new_file_name = self.get_file_name()
+        self.status_label["text"] = f"File name set to {new_file_name}"
+
 if __name__ == "__main__":
     root = tk.Tk()
-    monitor = SerialMonitor(root)
+    app = SerialMonitor(root)
     root.mainloop()
