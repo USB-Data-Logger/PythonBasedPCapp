@@ -27,6 +27,7 @@ class SerialMonitor:
     def init_ui(self):
         style = ttk.Style()
         style.theme_use('clam')
+        large_font = ('Helvetica', 14)  # Adjust the size as needed, 12 is an example for 50% larger
         style.configure('TLabel', background=dark_bg, foreground=light_text)
         style.configure('TButton', background=button_bg, foreground=light_text)
         style.configure('TEntry', background=dark_bg, foreground=light_text, fieldbackground="#43454a")
@@ -90,6 +91,15 @@ class SerialMonitor:
     def get_file_name(self):
         current_time = datetime.now().strftime("%Y-%m-%d %H.%M.%S")
         return f"{current_time} {self.file_suffix.get()}.csv"
+
+    def append_output(self, text):
+        """ Append text to the output window. """
+        self.output_window.config(state=tk.NORMAL)  # Enable editing to append text
+        self.output_window.insert(tk.END, text + '\n')  # Append text
+        self.output_window.config(state=tk.DISABLED)  # Disable editing again
+        self.output_window.see(tk.END)  # Scroll to the end
+    
+
 
 if __name__ == "__main__":
     root = tk.Tk()
