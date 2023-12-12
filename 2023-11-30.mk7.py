@@ -45,19 +45,18 @@ class SerialMonitor:
         self.start_stop_button = ttk.Button(self.root, text="Start Monitoring", command=self.toggle_monitoring)
         self.start_stop_button.pack(pady=10)
 
-        ttk.Button(self.root, text="Refresh", command=self.refresh_file_name).pack(pady=5)
-
         self.status_label = ttk.Label(self.root, text="")
         self.status_label.pack(pady=10)
 
     def toggle_monitoring(self):
         if not self.monitoring:
             # Start monitoring
+            self.file_name = self.get_file_name()  # Update the file name with the current date and time
             try:
                 self.serial_port = serial.Serial(self.com_port_var.get(), int(self.baud_rate_var.get()), timeout=1)
                 self.start_stop_button["text"] = "Stop Monitoring"
-                self.file_name = self.get_file_name()
                 self.monitoring = True
+                self.status_label["text"] = f"Monitoring started, saving to {self.file_name}"
                 self.read_serial_data()
             except serial.SerialException as e:
                 self.status_label["text"] = f"Error: {e}"
@@ -85,10 +84,6 @@ class SerialMonitor:
     def get_file_name(self):
         current_time = datetime.now().strftime("%Y-%m-%d %H.%M.%S")
         return f"{current_time} {self.file_suffix.get()}.csv"
-
-    def refresh_file_name(self):
-        new_file_name = self.get_file_name()
-        self.status_label["text"] = f"File name set to {new_file_name}"
 
 if __name__ == "__main__":
     root = tk.Tk()
