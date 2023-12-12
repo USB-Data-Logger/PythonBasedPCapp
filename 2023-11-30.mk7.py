@@ -40,9 +40,6 @@ class SerialMonitor:
         self.stop_button = tk.Button(self.root, text="Stop Monitoring", command=self.stop_monitoring, state=tk.DISABLED)
         self.stop_button.pack(pady=10)
 
-        self.save_button = tk.Button(self.root, text="Save Data", command=self.save_data, state=tk.DISABLED)
-        self.save_button.pack(pady=10)
-
         # Status Display Label
         self.status_label = tk.Label(self.root, text="")
         self.status_label.pack(pady=10)
@@ -54,7 +51,6 @@ class SerialMonitor:
             self.serial_port = serial.Serial(self.com_port_var.get(), int(self.baud_rate_var.get()))
             self.start_button["state"] = tk.DISABLED
             self.stop_button["state"] = tk.NORMAL
-            self.save_button["state"] = tk.NORMAL
             self.status_label["text"] = "Monitoring started"
             self.root.after(100, self.read_serial_data)
         except Exception as e:
@@ -66,7 +62,6 @@ class SerialMonitor:
             self.serial_port.close()
             self.start_button["state"] = tk.NORMAL
             self.stop_button["state"] = tk.DISABLED
-            self.save_button["state"] = tk.DISABLED
             self.status_label["text"] = "Monitoring stopped"
 
     def read_serial_data(self):
@@ -74,7 +69,7 @@ class SerialMonitor:
         if self.serial_port and self.serial_port.is_open:
             try:
                 data = self.serial_port.readline().decode("utf-8").strip()
-                if data.startswith("V1"):  # Assuming "V1," is the prefix for CSV data
+                if data:  # Checking if data is not empty
                     timestamp = datetime.now().strftime("%Y-%m-%d, %H:%M:%S.%f")[:-3]
                     data_with_timestamp = f"{timestamp}, {data}\n"
                     self.status_label["text"] = data_with_timestamp
@@ -102,12 +97,8 @@ class SerialMonitor:
                 file.write(data)
             self.status_label["text"] = f"Data saved to {self.file_name}"
 
-    def save_data(self):
-        # Placeholder for saving data functionality
-        pass
-
 # Tkinter GUI initialization
 if __name__ == "__main__":
     root = tk.Tk()
-    app = SerialMonitor(root)
+    monitor = SerialMonitor(root)
     root.mainloop()
