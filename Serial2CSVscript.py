@@ -13,7 +13,7 @@ class SerialMonitor:
     def __init__(self, root):
         self.root = root
         self.root.title("Serial Monitor")
-        self.root.geometry("800x450")  # Set main window size to a 16:9 ratio
+        self.root.geometry("450x350")  # Set main window size to a 16:9 ratio
         self.root.configure(bg=dark_bg)
 
         self.serial_port = None
@@ -47,6 +47,12 @@ class SerialMonitor:
 
         self.status_label = ttk.Label(self.root, text="")
         self.status_label.pack(pady=10)
+        
+        # Add Output Window (Text widget)
+        self.output_window = tk.Text(self.root, height=2, bg='white', fg='black')
+        self.output_window.pack(fill=tk.X, padx=10, pady=5)
+        self.output_window.config(state=tk.DISABLED)  # Disable editing of the text widget
+
 
     def toggle_monitoring(self):
         if not self.monitoring:
