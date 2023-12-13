@@ -93,7 +93,7 @@ class SerialMonitor:
             self.monitoring = False
             self.append_output("Monitoring stopped")
             self.append_output(f"Data saved to {self.file_name}")
-            self.append_output("_" * 60)
+            #self.append_output("_" * 60) this was bit much
 
     def read_serial_data(self):
         if self.monitoring and self.serial_port and self.serial_port.is_open:
