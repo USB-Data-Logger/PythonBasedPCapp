@@ -18,6 +18,8 @@ def get_com_ports():
 
 class SerialMonitor:
     def __init__(self, root):
+        self.data_buffer = []
+        self.buffer_limit = 50  # Number of lines after which to flush the buffer
         self.root = root
         self.root.title("Serial Monitor")
         self.root.geometry("450x350")  # Set main window size to a 16:9 ratio
@@ -91,22 +93,27 @@ class SerialMonitor:
                 self.serial_port.close()
             self.start_stop_button["text"] = "Start Monitoring"
             self.monitoring = False
+            self.flush_buffer()  # Flush buffer when stopping
             self.append_output("Monitoring stopped")
             self.append_output(f"Data saved to {self.file_name}")
-            #self.append_output("_" * 60) this was bit much
 
     def read_serial_data(self):
         if self.monitoring and self.serial_port and self.serial_port.is_open:
             data = self.serial_port.readline()
             if data:
                 timestamped_data = f"{datetime.now().strftime('%Y-%m-%d,%H:%M:%S.%f')[:-3]}, {data.decode().strip()}\n"
-                self.save_data_to_file(timestamped_data)
-                self.total_row_count += 1
-                self.replace_output(
-                    self.output_message + f"Total {self.total_row_count} written"
-                )
-
+                self.data_buffer.append(timestamped_data)
+                if len(self.data_buffer) >= self.buffer_limit:
+                    self.flush_buffer()
             self.root.after(100, self.read_serial_data)
+
+    def flush_buffer(self):
+        with open(self.file_name, "a") as file:
+            for data in self.data_buffer:
+                file.write(data)
+        self.data_buffer.clear()  # Clear the buffer after flushing
+        self.append_output(f"Buffer flushed, {self.buffer_limit} entries written")
+
 
     def save_data_to_file(self, data):
         with open(self.file_name, "a") as file:
