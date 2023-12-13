@@ -46,15 +46,16 @@ class SerialMonitor:
         style.configure("TEntry",background=dark_bg,foreground=light_text,fieldbackground="#43454a",)
         style.map("TButton",background=[("active", accent_color)],foreground=[("active", light_text)],)
 
-        ttk.Label(self.root, text="COM Port:").place(x=80,y=10)
+        ttk.Label(self.root, text="COM Port:",font=('impack',20,'bold')).place(x=40,y=10)
         ttk.Combobox(self.root, textvariable=self.com_port_var, values=[f"COM{i}" for i in range(10)]).place(x=40,y=40)
         ttk.Label(self.root, text="type in custom value or address if needed").place(x=5,y=65)
          # values=[f"COM{i}" for i in range(10)],
 
-        ttk.Label(self.root, text="Baud Rate:").place(x=310,y=10)
+        ttk.Label(self.root, text="Baud Rate:",font=('impack',20,'bold')).place(x=270,y=10)
         ttk.Combobox(self.root, textvariable=self.baud_rate_var, values=["9600", "19200", "38400", "57600", "115200"]).place(x=270,y=40)
         ttk.Label(self.root, text="type in custom rate if needed").place(x=260,y=65)
         
+        ttk.Label(self.root, text="Output file name",font=('impack',10,)).place(x=10,y=90)
         ttk.Label(self.root, text="Optional Suffix:",font=('impack',10,'bold')).place(x=180,y=90)
         ttk.Label(self.root, text="YYYY-MM-DD HH.MM.SS").place(x=30,y=115)
         ttk.Label(self.root, text=".csv").place(x=300,y=115)
