@@ -1,6 +1,6 @@
 import tkinter as tk
-from tkinter import ttk
 import serial
+from tkinter import ttk
 from serial.tools import list_ports
 from datetime import datetime
 
@@ -76,38 +76,24 @@ class SerialMonitor:
     def toggle_monitoring(self):
         if not self.monitoring:
             # Start monitoring
-            self.file_name = (self.get_file_name())  # Update the file name with the current date and time
+            self.file_name = self.get_file_name()  # Update the file name
             try:
-                self.serial_port = serial.Serial(
-                    self.com_port_var.get(), int(self.baud_rate_var.get()), timeout=1
-                )
+                self.serial_port = serial.Serial(self.com_port_var.get(), int(self.baud_rate_var.get()), timeout=1)
                 self.start_stop_button["text"] = "Stop Monitoring"
                 self.monitoring = True
-                self.status_label[
-                    "text"
-                ] = f"Monitoring started, saving to {self.file_name}"
-                self.append_output("Monitoring started",end="")
-
-                self.output_message = self.output_window.get(1.0, tk.END)
-
+                self.append_output(f"Monitoring started, saving to {self.file_name}")
                 self.read_serial_data()
-
             except serial.SerialException as e:
-                self.status_label["text"] = f"Error: {e}"
-                self.append_output("Error: Unable to open com port")
+                self.append_output(f"Error: {e}")
         else:
             # Stop monitoring
             if self.serial_port and self.serial_port.is_open:
                 self.serial_port.close()
             self.start_stop_button["text"] = "Start Monitoring"
             self.monitoring = False
-            self.status_label["text"] = "Monitoring stopped"
-
-            self.total_row_count = 0
-            self.append_output(f"Data saved to {self.file_name}")
             self.append_output("Monitoring stopped")
-            self.append_output("_"*60,end="\n\n")
-            self.output_message = self.output_window.get(1.0, tk.END)
+            self.append_output(f"Data saved to {self.file_name}")
+            self.append_output("_" * 60)
 
     def read_serial_data(self):
         if self.monitoring and self.serial_port and self.serial_port.is_open:
@@ -125,7 +111,7 @@ class SerialMonitor:
     def save_data_to_file(self, data):
         with open(self.file_name, "a") as file:
             file.write(data)
-            self.status_label["text"] = f"Data saved to {self.file_name}"
+            self.append_output(f"Data saved to {self.file_name}")
 
     def get_file_name(self):
         current_time = datetime.now().strftime("%Y-%m-%d %H.%M.%S")
