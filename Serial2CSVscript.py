@@ -21,7 +21,7 @@ class SerialMonitor:
         self.data_buffer = []
         self.buffer_limit = 50  # Number of lines after which to flush the buffer
         self.root = root
-        self.root.title("Serial Monitor")
+        self.root.title("Serial to CSV")
         self.root.geometry("450x300")  # Set main window size to a 16:9 ratio
         self.root.configure(bg=dark_bg)
 
