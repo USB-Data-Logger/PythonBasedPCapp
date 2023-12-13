@@ -76,9 +76,7 @@ class SerialMonitor:
     def toggle_monitoring(self):
         if not self.monitoring:
             # Start monitoring
-            self.file_name = (
-                self.get_file_name()
-            )  # Update the file name with the current date and time
+            self.file_name = (self.get_file_name())  # Update the file name with the current date and time
             try:
                 self.serial_port = serial.Serial(
                     self.com_port_var.get(), int(self.baud_rate_var.get()), timeout=1
