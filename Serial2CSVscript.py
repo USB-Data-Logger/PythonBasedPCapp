@@ -46,31 +46,33 @@ class SerialMonitor:
         style.configure("TEntry",background=dark_bg,foreground=light_text,fieldbackground="#43454a",)
         style.map("TButton",background=[("active", accent_color)],foreground=[("active", light_text)],)
 
-        ttk.Label(self.root, text="COM Port:").pack(pady=5)
-        ttk.Combobox(self.root, textvariable=self.com_port_var, values=[f"COM{i}" for i in range(10)]).pack(pady=5)
+        ttk.Label(self.root, text="COM Port:").place(x=80,y=10)
+        ttk.Combobox(self.root, textvariable=self.com_port_var, values=[f"COM{i}" for i in range(10)]).place(x=40,y=40)
+        ttk.Label(self.root, text="type in custom value if needed").place(x=30,y=65)
          # values=[f"COM{i}" for i in range(10)],
 
-        ttk.Label(self.root, text="Baud Rate:").pack(pady=5)
-        ttk.Combobox(self.root, textvariable=self.baud_rate_var, values=["9600", "19200", "38400", "57600", "115200"]).pack(pady=5)
+        ttk.Label(self.root, text="Baud Rate:").place(x=310,y=10)
+        ttk.Combobox(self.root, textvariable=self.baud_rate_var, values=["9600", "19200", "38400", "57600", "115200"]).place(x=270,y=40)
 
-        ttk.Label(self.root, text="Suffix:").pack(pady=5)
-        self.file_suffix_entry = ttk.Entry(self.root, textvariable=self.file_suffix)
-        self.file_suffix_entry.pack(pady=5)
+        ttk.Label(self.root, text="Suffix:",font=('impack',10,'bold')).place(x=205,y=80)
+        ttk.Label(self.root, text="(optional)").place(x=200,y=95)
+        self.file_suffix_entry = ttk.Entry(self.root, textvariable=self.file_suffix).place(x=170,y=120)
+
 
         self.start_stop_button = ttk.Button(
             self.root, text="Start Monitoring", command=self.toggle_monitoring
         )
-        self.start_stop_button.pack(pady=10)
+        self.start_stop_button.place(x=180,y=180)
 
-        self.status_label = ttk.Label(self.root, text="")
-        self.status_label.pack(pady=10)
+        self.status_label = ttk.Label(self.root, text="test")
+        self.status_label.place(x=10,y=220)
 
         # Add Output Window (Text widget)
        
         self.output_window = scrolledtext.ScrolledText(
-            self.root, height=5, bg="white", fg="black", wrap=tk.WORD
+            self.root,width=52, height=5, bg="white", fg="black", wrap=tk.WORD
         )
-        self.output_window.pack(side=tk.LEFT, fill=tk.X, padx=10, pady=5)
+        self.output_window.place(x=5,y=250)
 
         # Set the state of the ScrolledText widget to DISABLED
         self.output_window.config(state=tk.DISABLED)
@@ -144,3 +146,4 @@ if __name__ == "__main__":
     root = tk.Tk()
     app = SerialMonitor(root)
     root.mainloop()
+
