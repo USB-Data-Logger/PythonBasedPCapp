@@ -22,7 +22,7 @@ class SerialMonitor:
         self.buffer_limit = 50  # Number of lines after which to flush the buffer
         self.root = root
         self.root.title("Serial Monitor")
-        self.root.geometry("450x350")  # Set main window size to a 16:9 ratio
+        self.root.geometry("450x300")  # Set main window size to a 16:9 ratio
         self.root.configure(bg=dark_bg)
 
         self.serial_port = None
@@ -48,31 +48,33 @@ class SerialMonitor:
 
         ttk.Label(self.root, text="COM Port:").place(x=80,y=10)
         ttk.Combobox(self.root, textvariable=self.com_port_var, values=[f"COM{i}" for i in range(10)]).place(x=40,y=40)
-        ttk.Label(self.root, text="type in custom value if needed").place(x=30,y=65)
+        ttk.Label(self.root, text="type in custom value or address if needed").place(x=5,y=65)
          # values=[f"COM{i}" for i in range(10)],
 
         ttk.Label(self.root, text="Baud Rate:").place(x=310,y=10)
         ttk.Combobox(self.root, textvariable=self.baud_rate_var, values=["9600", "19200", "38400", "57600", "115200"]).place(x=270,y=40)
-
-        ttk.Label(self.root, text="Suffix:",font=('impack',10,'bold')).place(x=205,y=80)
-        ttk.Label(self.root, text="(optional)").place(x=200,y=95)
-        self.file_suffix_entry = ttk.Entry(self.root, textvariable=self.file_suffix).place(x=170,y=120)
-
+        ttk.Label(self.root, text="type in custom rate if needed").place(x=260,y=65)
+        
+        ttk.Label(self.root, text="Optional Suffix:",font=('impack',10,'bold')).place(x=180,y=90)
+        ttk.Label(self.root, text="YYYY-MM-DD HH.MM.SS").place(x=30,y=115)
+        ttk.Label(self.root, text=".csv").place(x=300,y=115)
+        self.file_suffix_entry = ttk.Entry(self.root, textvariable=self.file_suffix).place(x=170,y=115)
+        
 
         self.start_stop_button = ttk.Button(
             self.root, text="Start Monitoring", command=self.toggle_monitoring
         )
-        self.start_stop_button.place(x=180,y=180)
+        self.start_stop_button.place(x=180,y=140)
 
-        self.status_label = ttk.Label(self.root, text="test")
-        self.status_label.place(x=10,y=220)
+        self.status_label = ttk.Label(self.root, text="Monitoring Console")
+        self.status_label.place(x=10,y=155)
 
         # Add Output Window (Text widget)
        
         self.output_window = scrolledtext.ScrolledText(
             self.root,width=52, height=5, bg="white", fg="black", wrap=tk.WORD
         )
-        self.output_window.place(x=5,y=250)
+        self.output_window.place(x=5,y=175)
 
         # Set the state of the ScrolledText widget to DISABLED
         self.output_window.config(state=tk.DISABLED)
@@ -115,7 +117,6 @@ class SerialMonitor:
                 file.write(data)
         self.data_buffer.clear()  # Clear the buffer after flushing
         self.append_output(f"Buffer flushed, {self.buffer_limit} entries written")
-
 
     def save_data_to_file(self, data):
         with open(self.file_name, "a") as file:
