@@ -420,13 +420,13 @@ class SerialMonitor:
         text = f"Row Count = {self.total_row_count}, Buffer Flush = {self.buffer_flush_count}"
         self.replace_output(self.output_message + text)
 
-    def get_file_name(self):
+    def get_file_name(self,ext=".csv"):
         template = settings["file_name_template"]
         current_time = get_formatted_date(
             file_name_template.get(template, template),
             suffix=self.file_suffix_entry.get(),
         )
-        return f"{current_time}.csv"
+        return f"{current_time}{ext}"
 
     def replace_output(self, new_text, end="\n"):
         """Replace the entire content of the output window."""
