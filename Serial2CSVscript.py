@@ -244,7 +244,7 @@ class SerialMonitor:
 
     def save_log_file(self):
         with open(
-            datetime.now().strftime("%Y-%m-%d,%H:%M:%S.%f")[:-3] + ".txt", "w"
+            datetime.now().strftime("%Y-%m-%d %H.%M.%S") + ".txt", "w"
         ) as log_file:
             log_file.write(self.output_message)
 
