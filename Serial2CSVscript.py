@@ -224,7 +224,7 @@ class SerialMonitor:
         self.init_ui()
 
     def save_log_file(self):
-        with open(datetime.now().strftime('%Y-%m-%d,%H:%M:%S.%f')[:-3],"w") as log_file:
+        with open(datetime.now().strftime('%Y-%m-%d,%H:%M:%S.%f')[:-3]+".txt","w") as log_file:
             log_file.write(self.output_message)
 
     def on_closing(self):
@@ -359,6 +359,7 @@ class SerialMonitor:
             self.append_output("Monitoring stopped")
             self.append_output(f"Data saved to {self.file_name}")
             self.total_row_count = 0
+            self.buffer_flush_count = 0
             self.output_message = self.output_window.get(1.0, tk.END)
 
 
