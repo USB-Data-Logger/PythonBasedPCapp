@@ -33,7 +33,7 @@ file_name_template = {
 }
 
 pad_x = 10
-
+pad_y = 10
 
 def load_settings(settings_path):
     if os.path.isfile(settings_path):
@@ -146,7 +146,7 @@ class SettingsWindow:
 
         self.file_template_render = tk.StringVar()
         ttk.Label(self.settings_window, textvariable=self.file_template_render).grid(
-            row=2, columnspan=3, padx=pad_x,  sticky=tk.NS
+            row=2, columnspan=3, padx=pad_x,  sticky=tk.NS,pady=pad_y
         )
 
         # Buffer Size
@@ -174,7 +174,7 @@ class SettingsWindow:
         )
 
         self.discard_button.pack(anchor=tk.CENTER,side=tk.LEFT,padx=pad_x)
-        self.frame_dialog_btns.grid(row=4,columnspan=3,pady=10)
+        self.frame_dialog_btns.grid(row=4,columnspan=3,pady=pad_y)
         self.load_settings()
 
     def combo_format_selected(self, event):
