@@ -98,10 +98,12 @@ class HintEntry(tk.Entry):
 
 
 class SettingsWindow:
-    def __init__(self, parent):
+    def __init__(self, parent,on_distroy=None):
         self.parent = parent
-        self.settings_window = tk.Toplevel(parent)
 
+        self.on_distroy = on_distroy
+        self.settings_window = tk.Toplevel(parent)
+        
         self.settings_window.configure(bg=dark_bg)
         self.settings_window.title("Settings")
         self.settings_window.geometry("450x200")
@@ -188,6 +190,8 @@ class SettingsWindow:
         settings["folder"] = self.folder_var.get()
         settings["file_name_template"] = self.template_var.get()
         settings["buffer_size"] = self.buffer_var.get()
+        if self.on_distroy:
+            self.on_distroy()
         self.settings_window.destroy()
 
 
@@ -222,11 +226,20 @@ class SerialMonitor:
         self.file_path = settings["folder"]
 
         self.init_ui()
+        self.update_lbl_prefix()
 
     def save_log_file(self):
-        with open(datetime.now().strftime('%Y-%m-%d,%H:%M:%S.%f')[:-3]+".txt","w") as log_file:
+        with open(
+            datetime.now().strftime("%Y-%m-%d,%H:%M:%S.%f")[:-3] + ".txt", "w"
+        ) as log_file:
             log_file.write(self.output_message)
 
+    def update_lbl_prefix(self):
+        self.lbl_prefix["text"]=( get_formatted_date(
+                file_name_template.get(
+                    settings["file_name_template"], settings["file_name_template"]
+                )
+            ))
     def on_closing(self):
         settings["suffix"] = self.file_suffix_entry.get()
         settings["baud_rate"] = self.baud_rate_var.get()
@@ -253,25 +266,26 @@ class SerialMonitor:
             foreground=[("active", light_text)],
         )
         ttk.Label(self.root, text="COM Port:", font=("impack", 20, "bold")).grid(
-            row=0, column=0, padx=pad_x,sticky=tk.W
+            row=0, column=0, padx=pad_x, sticky=tk.W
         )
         ttk.Label(self.root, text="Baud Rate:", font=("impack", 20, "bold")).grid(
-            row=0, column=1, padx=pad_x,sticky=tk.W
+            row=0, column=1, padx=pad_x, sticky=tk.W
         )
 
         ttk.Combobox(
             self.root,
             textvariable=self.com_port_var,
             values=[f"COM{i}" for i in range(10)],
-        ).grid(row=1, column=0, padx=pad_x,sticky=tk.W)
+        ).grid(row=1, column=0, padx=pad_x, sticky=tk.W)
 
         ttk.Combobox(
             self.root,
             textvariable=self.baud_rate_var,
             values=["9600", "19200", "38400", "57600", "115200"],
-        ).grid(row=1, column=1, padx=pad_x,sticky=tk.W)
+        ).grid(row=1, column=1, padx=pad_x, sticky=tk.W)
         ttk.Label(self.root, text="type in custom value or address if needed").grid(
-            row=2, column=0,
+            row=2,
+            column=0,
         )
         # values=[f"COM{i}" for i in range(10)],
 
@@ -284,22 +298,21 @@ class SerialMonitor:
                 "impack",
                 10,
             ),
-        ).grid(row=3,columnspan=3)
-
+        ).grid(row=3, columnspan=3)
 
         frame = tk.Frame(bg=dark_bg)
 
-        ttk.Label(frame, text="YYYY-MM-DD HH.MM.SS").grid(row=0, column=0)
+        self.lbl_prefix = ttk.Label(frame,)
+        self.lbl_prefix.grid(row=0, column=0)
         self.file_suffix_entry = HintEntry(
             frame,
             placeholder="optional suffix",
         )
 
-        self.file_suffix_entry.grid(row=0 ,column=1)
+        self.file_suffix_entry.grid(row=0, column=1)
         ttk.Label(frame, text=".csv").grid(row=0, column=2)
 
-
-        frame.grid(row=4,columnspan=2,sticky=tk.W,pady=10)
+        frame.grid(row=4, columnspan=2, sticky=tk.W, pady=10)
         self.start_stop_button = ttk.Button(
             self.root, text="Start Monitoring", command=self.toggle_monitoring
         )
@@ -323,13 +336,18 @@ class SerialMonitor:
             fg="black",
             wrap=tk.WORD,  # setting for how many line
         )
-        self.output_window.grid(row=7,columnspan=3)
+        self.output_window.grid(row=7, columnspan=3)
 
         # Set the state of the ScrolledText widget to DISABLED
         self.output_window.config(state=tk.DISABLED)
 
     def open_settings(self):
-        settings_window = SettingsWindow(self.root)
+        SettingsWindow(self.root,self.settings_window_distroy)
+    
+    def settings_window_distroy(self):
+
+        save_settings(SETTINGS_FILE, settings)
+        self.update_lbl_prefix()
 
     def toggle_monitoring(self):
         if not self.monitoring:
@@ -362,7 +380,6 @@ class SerialMonitor:
             self.buffer_flush_count = 0
             self.output_message = self.output_window.get(1.0, tk.END)
 
-
     def read_serial_data(self):
         if self.monitoring and self.serial_port and self.serial_port.is_open:
             data = self.serial_port.readline()
@@ -371,8 +388,8 @@ class SerialMonitor:
                 self.data_buffer.append(timestamped_data)
 
                 if len(self.data_buffer) == int(settings["buffer_size"]):
-                    self.flush_buffer()  
-                self.update_row_count()  
+                    self.flush_buffer()
+                self.update_row_count()
                 self.update_output()
                 self.root.after(100, self.read_serial_data)
 
