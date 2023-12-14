@@ -1,8 +1,0 @@
-{
-    "folder": "/home/jagannath/programming/git_clone/PythonBasedPCapp",
-    "file_name_template": "%H%Y-custom",
-    "suffix": "",
-    "baud_rate": "9600",
-    "com_port": "/dev/pts/5",
-    "buffer_size": "10"
-}
