@@ -1,8 +1,8 @@
 {
-    "folder": "D:/Side Projects/2023-11-19 USB DATA LOGGER/CSV Output",
-    "file_name_template": "Default",
+    "folder": "/home/jagannath/programming/git_clone/PythonBasedPCapp",
+    "file_name_template": "%H%Y-custom",
     "suffix": "",
     "baud_rate": "9600",
-    "com_port": "COM7",
+    "com_port": "/dev/pts/5",
     "buffer_size": "10"
 }
