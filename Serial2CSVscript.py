@@ -157,10 +157,19 @@ class SettingsWindow:
         self.buffer_entry.grid(row=3, column=1, padx=10, pady=5, sticky=tk.W)
 
         # OK Button
-        self.ok_button = ttk.Button(
-            self.settings_window, text="OK", command=self.settings_ok
+
+        #Save and Exit Button
+        self.save_and_exit_btn = ttk.Button(
+                self.settings_window,text="Save And Exit" , command=self.settings_ok
         )
-        self.ok_button.grid(row=4, column=0, columnspan=3, pady=10)
+        self.save_and_exit_btn.grid(row=4, column=0)
+
+        self.discard_button = ttk.Button(
+                self.settings_window , text = "Discard Settings" ,command= self.settings_window.destroy
+        )
+
+        self.discard_button.grid(row =4 ,column= 1)
+
         self.load_settings()
 
     def combo_format_selected(self, event):
