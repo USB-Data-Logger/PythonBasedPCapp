@@ -32,7 +32,7 @@ file_name_template = {
     "With No Suffix": "%Y-%m-%d %H.%M.%S",
 }
 
-pad_x = 2
+pad_x = 10
 
 
 def load_settings(settings_path):
@@ -105,6 +105,8 @@ class SettingsWindow:
         self.settings_window = tk.Toplevel(parent)
         
         self.settings_window.configure(bg=dark_bg)
+        #self.settings_window.columnconfigure(0, weight=1)
+        #self.settings_window.rowconfigure(0, weight=1)
         self.settings_window.title("Settings")
         self.settings_window.geometry("450x200")
         # self.settings_window.resizable(False, False)
@@ -144,7 +146,7 @@ class SettingsWindow:
 
         self.file_template_render = tk.StringVar()
         ttk.Label(self.settings_window, textvariable=self.file_template_render).grid(
-            row=2, columnspan=2, padx=pad_x, sticky=tk.W
+            row=2, columnspan=3, padx=pad_x,  sticky=tk.NS
         )
 
         # Buffer Size
@@ -165,14 +167,14 @@ class SettingsWindow:
         self.save_and_exit_btn = ttk.Button(
                 self.frame_dialog_btns,text="Save And Exit" , command=self.settings_ok
         )
-        self.save_and_exit_btn.pack(anchor=tk.CENTER,side=tk.LEFT,)
+        self.save_and_exit_btn.pack(anchor=tk.CENTER,side=tk.LEFT,padx = pad_x)
 
         self.discard_button = ttk.Button(
                 self.frame_dialog_btns , text = "Discard Settings" ,command= self.settings_window.destroy
         )
 
-        self.discard_button.pack(anchor=tk.CENTER,side=tk.LEFT,)
-        self.frame_dialog_btns.grid(row=4,columnspan=3)
+        self.discard_button.pack(anchor=tk.CENTER,side=tk.LEFT,padx=pad_x)
+        self.frame_dialog_btns.grid(row=4,columnspan=3,pady=10)
         self.load_settings()
 
     def combo_format_selected(self, event):
