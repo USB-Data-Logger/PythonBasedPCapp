@@ -15,7 +15,7 @@ accent_color = "#7289da"
 button_bg = "#23272a"
 
 default_setting = {
-    "folder": "",
+    "folder": os.getcwd(),
     "file_name_template": "With No Suffix",
     "suffix": "",
     "baud_rate": "9600",
