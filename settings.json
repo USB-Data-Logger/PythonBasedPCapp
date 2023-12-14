@@ -1,0 +1,8 @@
+{
+    "folder": "D:/Side Projects/2023-11-19 USB DATA LOGGER/CSV Output",
+    "file_name_template": "Default",
+    "suffix": "",
+    "baud_rate": "9600",
+    "com_port": "COM7",
+    "buffer_size": "10"
+}
