@@ -159,17 +159,20 @@ class SettingsWindow:
         # OK Button
 
         #Save and Exit Button
+
+        self.frame_dialog_btns = tk.Frame(self.settings_window,bg=dark_bg)
+
         self.save_and_exit_btn = ttk.Button(
-                self.settings_window,text="Save And Exit" , command=self.settings_ok
+                self.frame_dialog_btns,text="Save And Exit" , command=self.settings_ok
         )
-        self.save_and_exit_btn.grid(row=4, column=0)
+        self.save_and_exit_btn.pack(anchor=tk.CENTER,side=tk.LEFT,)
 
         self.discard_button = ttk.Button(
-                self.settings_window , text = "Discard Settings" ,command= self.settings_window.destroy
+                self.frame_dialog_btns , text = "Discard Settings" ,command= self.settings_window.destroy
         )
 
-        self.discard_button.grid(row =4 ,column= 1)
-
+        self.discard_button.pack(anchor=tk.CENTER,side=tk.LEFT,)
+        self.frame_dialog_btns.grid(row=4,columnspan=3)
         self.load_settings()
 
     def combo_format_selected(self, event):
