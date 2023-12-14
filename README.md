@@ -5,7 +5,6 @@ In this repo  I will upload a basic stand alone app that is made in Python using
 
 ```
 pip install -r requirements.txt
-
 ```
 
 ```
