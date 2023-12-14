@@ -369,22 +369,21 @@ class SerialMonitor:
             if data:
                 timestamped_data = f"{datetime.now().strftime('%Y-%m-%d,%H:%M:%S.%f')[:-3]}, {data.decode().strip()}\n"
                 self.data_buffer.append(timestamped_data)
-                if len(self.data_buffer) >= self.buffer_limit:
-                    self.flush_buffer()  # Flush buffer if it reaches the limit
-                else:
-                    self.update_row_count()  # Update row count in real-time
-            self.root.after(100, self.read_serial_data)
+
+                if len(self.data_buffer) == int(settings["buffer_size"]):
+                    self.flush_buffer()  
+                self.update_row_count()  
+                self.update_output()
+                self.root.after(100, self.read_serial_data)
 
     def flush_buffer(self):
         with open(self.file_path, "a") as file:
             file.writelines(self.data_buffer)
         self.data_buffer.clear()  # Clear the buffer after flushing
         self.buffer_flush_count += 1  # Increment buffer flush count
-        self.update_output()
 
     def update_row_count(self):
         self.total_row_count += 1
-        self.update_output()  # Update the output without creating new rows
 
     def update_output(self):
         text = f"Row Count = {self.total_row_count}, Buffer Flush = {self.buffer_flush_count}"
