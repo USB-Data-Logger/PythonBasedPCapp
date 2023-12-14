@@ -14,25 +14,35 @@ light_text = "#ffffff"
 accent_color = "#7289da"
 button_bg = "#23272a"
 
-SETTINGS_FILE = "settings.json"
-
-file_name_template = {
-    "Default": "%Y-%m-%d %H.%M.%S",
-    "Date only": "%Y-%m-%d",
-    "With Milisecond": "%Y-%m-%d %H.%M.%S.%f",
+default_setting = {
+    "folder": "",
+    "file_name_template": "With No Suffix",
+    "suffix": "",
+    "baud_rate": "9600",
+    "com_port": "COM7",
+    "buffer_size": "50",
 }
 
-pad_x = 20
+SETTINGS_FILE = "settings.json"
+
+
+file_name_template = {
+    "Default": "%Y-%m-%d %H.%M.%S %o",
+    "Date only": "%Y-%m-%d %o",
+    "With No Suffix": "%Y-%m-%d %H.%M.%S",
+}
+
+pad_x = 2
 
 
 def load_settings(settings_path):
-    file_obj = open(settings_path)
-    settings = json.load(file_obj)
-    if not os.path.isdir(settings["folder"]):
-        settings["folder"] = os.getcwd()
-
-    file_obj.close()
-    return settings
+    if os.path.isfile(settings_path):
+        with open(settings_path) as f:
+            settings = json.load(f)
+            if not os.path.isdir(settings["folder"]):
+                settings["folder"] = os.getcwd()
+            return settings
+    return default_setting
 
 
 settings = load_settings(SETTINGS_FILE)
@@ -48,17 +58,20 @@ def save_settings(settings_file, settings):
     file_obj.close()
 
 
-def get_formatted_date(format_str):
+def get_formatted_date(format_str, suffix=""):
+    format_str = format_str.replace("%o", suffix)
     return datetime.now().strftime(format_str)
 
 
 class HintEntry(tk.Entry):
-    def __init__(self, master=None, placeholder="PLACEHOLDER", color='grey',*args, **kwargs):
+    def __init__(
+        self, master=None, placeholder="PLACEHOLDER", color="grey", *args, **kwargs
+    ):
         super().__init__(master, *args, **kwargs)
 
         self.placeholder = placeholder
         self.placeholder_color = color
-        self.default_fg_color = self['fg']
+        self.default_fg_color = self["fg"]
 
         self.bind("<FocusIn>", self.foc_in)
         self.bind("<FocusOut>", self.foc_out)
@@ -67,15 +80,15 @@ class HintEntry(tk.Entry):
 
     def put_placeholder(self):
         self.insert(0, self.placeholder)
-        self['fg'] = self.placeholder_color
+        self["fg"] = self.placeholder_color
 
     def foc_in(self, *args):
-        if self['fg'] == self.placeholder_color:
-            self.delete('0', 'end')
-            self['fg'] = self.default_fg_color
+        if self["fg"] == self.placeholder_color:
+            self.delete("0", "end")
+            self["fg"] = self.default_fg_color
 
     def get(self):
-        if not  self['fg']==self.placeholder_color:
+        if not self["fg"] == self.placeholder_color:
             return super().get()
         return ""
 
@@ -83,16 +96,16 @@ class HintEntry(tk.Entry):
         if not self.get():
             self.put_placeholder()
 
+
 class SettingsWindow:
     def __init__(self, parent):
-       
         self.parent = parent
         self.settings_window = tk.Toplevel(parent)
 
         self.settings_window.configure(bg=dark_bg)
         self.settings_window.title("Settings")
         self.settings_window.geometry("450x200")
-        self.settings_window.resizable(False, False)
+        # self.settings_window.resizable(False, False)
         # Folder Selection
         self.folder_label = ttk.Label(self.settings_window, text="Select Folder:")
         self.folder_label.grid(row=0, column=0, padx=10, pady=5, sticky=tk.W)
@@ -158,7 +171,8 @@ class SettingsWindow:
         self.template_var.set(settings["file_name_template"])
         foramtted_date = get_formatted_date(
             file_name_template.get(
-                settings["file_name_template"], settings["file_name_template"]
+                settings["file_name_template"],
+                settings["file_name_template"],
             )
         )
         self.file_template_render.set(foramtted_date)
@@ -187,9 +201,10 @@ class SerialMonitor:
         self.root.title("Serial to CSV")
         self.root.geometry("450x300")  # Set main window size to a 16:9 ratio
 
+        # self.root.resizable(False, False)
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
-        #self.root.resizable(False, False) # to make thing more flexiabel
+        # self.root.resizable(False, False) # to make thing more flexiabel
         self.root.configure(bg=dark_bg)
 
         self.serial_port = None
@@ -208,11 +223,16 @@ class SerialMonitor:
 
         self.init_ui()
 
+    def save_log_file(self):
+        with open(datetime.now().strftime('%Y-%m-%d,%H:%M:%S.%f')[:-3],"w") as log_file:
+            log_file.write(self.output_message)
+
     def on_closing(self):
         settings["suffix"] = self.file_suffix_entry.get()
         settings["baud_rate"] = self.baud_rate_var.get()
         settings["com_port"] = self.com_port_var.get()
         save_settings(SETTINGS_FILE, settings)
+        self.save_log_file()
         self.root.destroy()
 
     def init_ui(self):
@@ -232,33 +252,30 @@ class SerialMonitor:
             background=[("active", accent_color)],
             foreground=[("active", light_text)],
         )
-        frame = tk.Frame(root, bg=dark_bg)
-        frame.pack(fill=tk.X)
-
-        ttk.Label(frame, text="COM Port:", font=("impack", 20, "bold")).grid(
-            row=0, column=0, padx=pad_x
+        ttk.Label(self.root, text="COM Port:", font=("impack", 20, "bold")).grid(
+            row=0, column=0, padx=pad_x,sticky=tk.W
         )
-        ttk.Label(frame, text="Baud Rate:", font=("impack", 20, "bold")).grid(
-            row=0, column=1, padx=pad_x
+        ttk.Label(self.root, text="Baud Rate:", font=("impack", 20, "bold")).grid(
+            row=0, column=1, padx=pad_x,sticky=tk.W
         )
 
         ttk.Combobox(
-            frame,
+            self.root,
             textvariable=self.com_port_var,
             values=[f"COM{i}" for i in range(10)],
-        ).grid(row=1, column=0, padx=pad_x)
+        ).grid(row=1, column=0, padx=pad_x,sticky=tk.W)
 
         ttk.Combobox(
-            frame,
+            self.root,
             textvariable=self.baud_rate_var,
             values=["9600", "19200", "38400", "57600", "115200"],
-        ).grid(row=1, column=1, padx=pad_x)
-        ttk.Label(self.root, text="type in custom value or address if needed").place(
-            x=5, y=65
+        ).grid(row=1, column=1, padx=pad_x,sticky=tk.W)
+        ttk.Label(self.root, text="type in custom value or address if needed").grid(
+            row=2, column=0,
         )
         # values=[f"COM{i}" for i in range(10)],
 
-        ttk.Label(self.root, text="type in custom rate if needed").place(x=260, y=65)
+        ttk.Label(self.root, text="type in custom rate if needed").grid(row=2, column=1)
 
         ttk.Label(
             self.root,
@@ -267,36 +284,46 @@ class SerialMonitor:
                 "impack",
                 10,
             ),
-        ).place(x=10, y=90)
-        ttk.Label(self.root, text="YYYY-MM-DD HH.MM.SS").place(x=30, y=115)
-        ttk.Label(self.root, text=".csv").place(x=300, y=115)
+        ).grid(row=3,columnspan=3)
+
+
+        frame = tk.Frame(bg=dark_bg)
+
+        ttk.Label(frame, text="YYYY-MM-DD HH.MM.SS").grid(row=0, column=0)
         self.file_suffix_entry = HintEntry(
-            self.root,
-            textvariable=self.file_suffix,
+            frame,
             placeholder="optional suffix",
         )
-        self.file_suffix_entry.place(x=170, y=115)
 
+        self.file_suffix_entry.grid(row=0 ,column=1)
+        ttk.Label(frame, text=".csv").grid(row=0, column=2)
+
+
+        frame.grid(row=4,columnspan=2,sticky=tk.W,pady=10)
         self.start_stop_button = ttk.Button(
             self.root, text="Start Monitoring", command=self.toggle_monitoring
         )
 
-        self.start_stop_button.place(x=180, y=140)
+        self.start_stop_button.grid(row=5, column=0)
         self.setting_btn = ttk.Button(
             self.root, text="Settings", command=self.open_settings
         )
 
-        self.setting_btn.place(x=360, y=140)
+        self.setting_btn.grid(row=5, column=1)
 
         self.status_label = ttk.Label(self.root, text="Monitoring Console")
-        self.status_label.place(x=10, y=155)
+        self.status_label.grid(row=6, column=0)
 
         # Add Output Window (Text widget)
 
         self.output_window = scrolledtext.ScrolledText(
-            self.root, height=7, bg="white", fg="black", wrap=tk.WORD   #setting for how many line
+            self.root,
+            height=7,
+            bg="white",
+            fg="black",
+            wrap=tk.WORD,  # setting for how many line
         )
-        self.output_window.pack(side="bottom", fill=tk.X)
+        self.output_window.grid(row=7,columnspan=3)
 
         # Set the state of the ScrolledText widget to DISABLED
         self.output_window.config(state=tk.DISABLED)
@@ -315,7 +342,10 @@ class SerialMonitor:
                 )
                 self.start_stop_button["text"] = "Stop Monitoring"
                 self.monitoring = True
-                self.append_output(f"Monitoring started, saving to {self.file_name}")
+                self.append_output(
+                    f"Monitoring started, saving to {self.file_name}", end=""
+                )
+                self.output_message = self.output_window.get(1.0, tk.END)
                 self.read_serial_data()
             except serial.SerialException as e:
                 self.append_output(f"Error: {e}")
@@ -328,6 +358,9 @@ class SerialMonitor:
             self.flush_buffer()  # Flush buffer when stopping
             self.append_output("Monitoring stopped")
             self.append_output(f"Data saved to {self.file_name}")
+            self.total_row_count = 0
+            self.output_message = self.output_window.get(1.0, tk.END)
+
 
     def read_serial_data(self):
         if self.monitoring and self.serial_port and self.serial_port.is_open:
@@ -341,34 +374,28 @@ class SerialMonitor:
                     self.update_row_count()  # Update row count in real-time
             self.root.after(100, self.read_serial_data)
 
-
-
-
     def flush_buffer(self):
         with open(self.file_path, "a") as file:
-            for data in self.data_buffer:
-                file.write(data)
+            file.writelines(self.data_buffer)
         self.data_buffer.clear()  # Clear the buffer after flushing
         self.buffer_flush_count += 1  # Increment buffer flush count
-        self.update_output() 
-   
+        self.update_output()
+
     def update_row_count(self):
         self.total_row_count += 1
         self.update_output()  # Update the output without creating new rows
 
     def update_output(self):
         text = f"Row Count = {self.total_row_count}, Buffer Flush = {self.buffer_flush_count}"
-        self.replace_output(text)
-
-    def save_data_to_file(self, data):
-        with open(self.file_name, "a") as file:
-            file.write(data)
-            self.append_output(f"Data saved to {self.file_name}")
+        self.replace_output(self.output_message + text)
 
     def get_file_name(self):
         template = settings["file_name_template"]
-        current_time = get_formatted_date(file_name_template.get(template, template))
-        return f"{current_time} {self.file_suffix_entry.get()}.csv"
+        current_time = get_formatted_date(
+            file_name_template.get(template, template),
+            suffix=self.file_suffix_entry.get(),
+        )
+        return f"{current_time}.csv"
 
     def replace_output(self, new_text, end="\n"):
         """Replace the entire content of the output window."""
