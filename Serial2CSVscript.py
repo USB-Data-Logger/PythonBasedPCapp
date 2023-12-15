@@ -4,13 +4,9 @@ from serial.tools import list_ports
 from datetime import datetime
 import json
 import os
+from customtkinter import filedialog
 
-# Define colors for the dark theme
-dark_bg = "#2c2f33"
-light_text = "#ffffff"
-accent_color = "#7289da"
-button_bg = "#23272a"
-
+ctk.set_appearance_mode("dark")
 default_setting = {
     "folder": os.getcwd(),
     "file_name_template": "With No Suffix",
@@ -31,6 +27,7 @@ file_name_template = {
 pad_x = 10
 pad_y = 10
 
+
 def load_settings(settings_path):
     if os.path.isfile(settings_path):
         with open(settings_path) as f:
@@ -44,7 +41,7 @@ def load_settings(settings_path):
 settings = load_settings(SETTINGS_FILE)
 
 
-def get_com_ports():
+def _get_com_ports():
     return [port.device for port in list_ports.comports()]
 
 
@@ -59,17 +56,23 @@ def get_formatted_date(format_str, suffix=""):
     return datetime.now().strftime(format_str)
 
 
+def get_com_port():
+    com_ports = [f"COM{i}" for i in range(10)]
+    if not settings["com_port"] in com_ports:
+        com_ports.append(settings["com_port"])
+    return com_ports
+
 
 class SettingsWindow:
-    def __init__(self, parent,on_distroy=None):
+    def __init__(self, parent, on_distroy=None):
         self.parent = parent
 
         self.on_distroy = on_distroy
-        self.settings_window = cctk.CTkToplevel(parent)
-        
-        self.settings_window.configure(bg=dark_bg)
-        #self.settings_window.columnconfigure(0, weight=1)
-        #self.settings_window.rowconfigure(0, weight=1)
+        self.settings_window = ctk.CTkToplevel(parent)
+
+        self.settings_window.configure()
+        # self.settings_window.columnconfigure(0, weight=1)
+        # self.settings_windorc.rowconfigure(0, weight=1)
         self.settings_window.title("Settings")
         self.settings_window.geometry("450x200")
         # self.settings_window.resizable(False, False)
@@ -77,11 +80,11 @@ class SettingsWindow:
         self.folder_label = ctk.CTkLabel(self.settings_window, text="Select Folder:")
         self.folder_label.grid(row=0, column=0, padx=10, pady=5, sticky=ctk.W)
         self.folder_var = ctk.StringVar()
-        self.folder_entry = ctk.Entry(
-            self.settings_window, textvariable=self.folder_var, width=30
+        self.folder_entry = ctk.CTkEntry(
+            self.settings_window, textvariable=self.folder_var
         )
         self.folder_entry.grid(row=0, column=1, padx=10, pady=5, sticky=ctk.W)
-        self.browse_button = ctk.Button(
+        self.browse_button = ctk.CTkButton(
             self.settings_window, text="Browse", command=self.browse_folder
         )
         self.browse_button.grid(row=0, column=2, padx=5, pady=5, sticky=ctk.W)
@@ -94,8 +97,8 @@ class SettingsWindow:
         self.template_var = ctk.StringVar()
         self.combo_format = ctk.CTkComboBox(
             self.settings_window,
-            textvariable=self.template_var,
             values=[i for i in file_name_template.keys()],
+            command=self.combo_format_selected,
         )
         self.combo_format.grid(
             row=1,
@@ -105,44 +108,47 @@ class SettingsWindow:
             sticky=ctk.W,
         )
 
-        self.combo_format.bind("<<CTkComboBoxSelected>>", self.combo_format_selected)
-
         self.file_template_render = ctk.StringVar()
         ctk.CTkLabel(self.settings_window, textvariable=self.file_template_render).grid(
-            row=2, columnspan=3, padx=pad_x,  sticky=ctk.NS,pady=pad_y
+            row=2,
+            columnspan=3,
+            padx=pad_x,
+            sticky=ctk.NS,
+            pady=pad_y,
         )
 
         # Buffer Size
         self.buffer_label = ctk.CTkLabel(self.settings_window, text="Buffer Size:")
         self.buffer_label.grid(row=3, column=0, padx=10, pady=5, sticky=ctk.W)
         self.buffer_var = ctk.StringVar()
-        self.buffer_entry = ctk.Entry(
-            self.settings_window, textvariable=self.buffer_var, width=10
+        self.buffer_entry = ctk.CTkEntry(
+            self.settings_window, width=10, textvariable=self.buffer_var
         )
         self.buffer_entry.grid(row=3, column=1, padx=10, pady=5, sticky=ctk.W)
 
         # OK Button
 
-        #Save and Exit Button
+        # Save and Exit Button
 
-        self.frame_dialog_btns = ctk.CTkFrame(self.settings_window,bg=dark_bg)
+        self.frame_dialog_btns = ctk.CTkFrame(self.settings_window)
 
-        self.save_and_exit_btn = ctk.Button(
-                self.frame_dialog_btns,text="Save And Exit" , command=self.settings_ok
+        self.save_and_exit_btn = ctk.CTkButton(
+            self.frame_dialog_btns, text="Save And Exit", command=self.settings_ok
         )
-        self.save_and_exit_btn.pack(anchor=ctk.CENTER,side=tk.LEFT,padx = pad_x)
+        self.save_and_exit_btn.pack(anchor=ctk.CENTER, side=ctk.LEFT, padx=pad_x)
 
-        self.discard_button = ctk.Button(
-                self.frame_dialog_btns , text = "Discard Settings" ,command= self.settings_window.destroy
+        self.discard_button = ctk.CTkButton(
+            self.frame_dialog_btns,
+            text="Discard Settings",
+            command=self.settings_window.destroy,
         )
 
-        self.discard_button.pack(anchor=ctk.CENTER,side=tk.LEFT,padx=pad_x)
-        self.frame_dialog_btns.grid(row=4,columnspan=3,pady=pad_y)
+        self.discard_button.pack(anchor=ctk.CENTER, side=ctk.LEFT, padx=pad_x)
+        self.frame_dialog_btns.grid(row=4, columnspan=3, pady=pad_y)
         self.load_settings()
 
-    def combo_format_selected(self, event):
-        template = self.template_var.get()
-        foramtted_date = get_formatted_date(file_name_template.get(template, template))
+    def combo_format_selected(self, choice):
+        foramtted_date = get_formatted_date(file_name_template.get(choice, choice))
         self.file_template_render.set(foramtted_date)
 
     def load_settings(self):
@@ -186,11 +192,10 @@ class SerialMonitor:
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         # self.root.resizable(False, False) # to make thing more flexiabel
-        self.root.configure(bg=dark_bg)
+        self.root.configure()
 
         self.serial_port = None
-        self.baud_rate_var = ctk.StringVar(value=settings["baud_rate"])
-        self.com_port_var = ctk.StringVar(value=settings["com_port"])
+
         self.file_suffix = ctk.StringVar(
             value=settings["suffix"]
         )  # Variable to hold the user-entered suffix
@@ -212,15 +217,18 @@ class SerialMonitor:
             log_file.write(self.output_message)
 
     def update_lbl_prefix(self):
-        self.lbl_prefix["text"]=( get_formatted_date(
-                file_name_template.get(
-                    settings["file_name_template"], settings["file_name_template"]
+        self.lbl_prefix.configure(
+            text=(
+                get_formatted_date(
+                    file_name_template.get(
+                        settings["file_name_template"], settings["file_name_template"]
+                    )
                 )
-            ))
+            )
+        )
+
     def on_closing(self):
         settings["suffix"] = self.file_suffix_entry.get()
-        settings["baud_rate"] = self.baud_rate_var.get()
-        settings["com_port"] = self.com_port_var.get()
         save_settings(SETTINGS_FILE, settings)
         self.save_log_file()
         self.root.destroy()
@@ -233,22 +241,22 @@ class SerialMonitor:
             row=0, column=1, padx=pad_x, sticky=ctk.W
         )
 
-        ctk.CTkComboBox(
+        self.combo_com_port = ctk.CTkComboBox(
             self.root,
-            values=[f"COM{i}" for i in range(10)],
-        ).grid(row=1, column=0, padx=pad_x, sticky=ctk.W)
+            values=get_com_port(),
+            command=self.com_port_clicked,
+        )
+        self.combo_com_port.grid(row=1, column=0, padx=pad_x, sticky=ctk.W)
+        self.combo_com_port.set(settings["com_port"])
 
-        ctk.CTkComboBox(
+
+        self.combo_baud_rate = ctk.CTkComboBox(
             self.root,
             values=["9600", "19200", "38400", "57600", "115200"],
-        ).grid(row=1, column=1, padx=pad_x, sticky=ctk.W)
-        ctk.CTkLabel(self.root, text="type in custom value or address if needed").grid(
-            row=2,
-            column=0,
+            command=self.baud_rate_clicked,
         )
-        # values=[f"COM{i}" for i in range(10)],
-
-        ctk.CTkLabel(self.root, text="type in custom rate if needed").grid(row=2, column=1)
+        self.combo_baud_rate.grid(row=1, column=1, padx=pad_x, sticky=ctk.W)
+        self.combo_baud_rate.set(settings["baud_rate"])
 
         ctk.CTkLabel(
             self.root,
@@ -261,7 +269,7 @@ class SerialMonitor:
 
         frame = ctk.CTkFrame(master=root)
 
-        self.lbl_prefix = ctk.CTkLabel(frame,)
+        self.lbl_prefix = ctk.CTkLabel(frame)
         self.lbl_prefix.grid(row=0, column=0)
         self.file_suffix_entry = ctk.CTkEntry(
             frame,
@@ -290,19 +298,23 @@ class SerialMonitor:
 
         self.output_window = ctk.CTkTextbox(
             self.root,
-            height=7,
             wrap=ctk.WORD,  # setting for how many line
         )
-        self.output_window.grid(row=7, columnspan=3)
+        self.output_window.grid(row=7, columnspan=5, sticky="NESW")
 
         # Set the state of the ScrolledText widget to DISABLED
         self.output_window.configure(state=ctk.DISABLED)
 
-    def open_settings(self):
-        SettingsWindow(self.root,self.settings_window_distroy)
-    
-    def settings_window_distroy(self):
+    def com_port_clicked(self, choice):
+        settings["com_port"] = choice
 
+    def baud_rate_clicked(self, choice):
+        settings["baud_rate"] = choice
+
+    def open_settings(self):
+        SettingsWindow(self.root, self.settings_window_distroy)
+
+    def settings_window_distroy(self):
         save_settings(SETTINGS_FILE, settings)
         self.update_lbl_prefix()
 
@@ -313,7 +325,7 @@ class SerialMonitor:
             self.file_path = os.path.join(settings["folder"], self.file_name)
             try:
                 self.serial_port = serial.Serial(
-                    self.com_port_var.get(), int(self.baud_rate_var.get()), timeout=1
+                    settings["com_port"], int(settings["baud_rate"]), timeout=1
                 )
                 self.start_stop_button["text"] = "Stop Monitoring"
                 self.monitoring = True
@@ -363,7 +375,7 @@ class SerialMonitor:
         text = f"Row Count = {self.total_row_count}, Buffer Flush = {self.buffer_flush_count}"
         self.replace_output(self.output_message + text)
 
-    def get_file_name(self,ext=".csv"):
+    def get_file_name(self, ext=".csv"):
         template = settings["file_name_template"]
         current_time = get_formatted_date(
             file_name_template.get(template, template),
@@ -373,17 +385,17 @@ class SerialMonitor:
 
     def replace_output(self, new_text, end="\n"):
         """Replace the entire content of the output window."""
-        self.output_window.config(state=ctk.NORMAL)  # Enable editing to replace text
+        self.output_window.configure(state=ctk.NORMAL)  # Enable editing to replace text
         self.output_window.delete(1.0, ctk.END)  # Delete existing content
         self.output_window.insert(ctk.END, new_text + end)  # Insert new text
-        self.output_window.config(state=ctk.DISABLED)  # Disable editing again
+        self.output_window.configure(state=ctk.DISABLED)  # Disable editing again
         self.output_window.see(ctk.END)  # Scroll to the end
 
     def append_output(self, text, end="\n"):
         """Append text to the output window."""
-        self.output_window.config(state=ctk.NORMAL)  # Enable editing to append text
+        self.output_window.configure(state=ctk.NORMAL)  # Enable editing to append text
         self.output_window.insert(ctk.END, text + end)  # Append text
-        self.output_window.config(state=ctk.DISABLED)  # Disable editing again
+        self.output_window.configure(state=ctk.DISABLED)  # Disable editing again
         self.output_window.see(ctk.END)  # Scroll to the end
 
 
