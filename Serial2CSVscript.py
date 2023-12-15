@@ -4,7 +4,7 @@ from serial.tools import list_ports
 from datetime import datetime
 import json
 import os
-
+import logging
 from plyer import filechooser
 
 from tktooltip import ToolTip
@@ -54,6 +54,7 @@ def save_settings(settings_file, settings):
 
 
 def get_formatted_date(format_str, suffix=""):
+    print(suffix)
     format_str = format_str.replace("%o", suffix)
     return datetime.now().strftime(format_str)
 
@@ -75,7 +76,7 @@ class SettingsWindow:
         self.settings_window.configure()
         self.settings_window.title("Settings")
         self.settings_window.geometry("460x200")
-        self.settings_window.resizable(False, False)
+       # self.settings_window.resizable(False, False)
         self.settings_window.lift()
         # Folder Selection
         self.folder_label = ctk.CTkLabel(self.settings_window, text="Select Folder:")
@@ -227,8 +228,7 @@ class SerialMonitor:
         self.update_lbl_prefix()
 
     def save_log_file(self):
-        with open(
-            datetime.now().strftime("%Y-%m-%d %H.%M.%S") + ".txt", "w"
+        with open("log.txt", "a"
         ) as log_file:
             log_file.write(self.output_message)
 
@@ -393,7 +393,7 @@ class SerialMonitor:
                 timestamped_data = f"{datetime.now().strftime('%Y-%m-%d,%H:%M:%S.%f')[:-3]}, {data.decode().strip()}\n"
                 self.data_buffer.append(timestamped_data)
 
-                if len(self.data_buffer) == int(settings["buffer_size"]):
+                if len(self.data_buffer) >= int(settings["buffer_size"]):
                     self.flush_buffer()
                 self.update_row_count()
                 self.update_output()
