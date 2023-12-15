@@ -11,11 +11,11 @@ from tktooltip import ToolTip
 ctk.set_appearance_mode("dark")
 default_setting = {
     "folder": os.getcwd(),
-    "file_name_template": "With No Suffix",
+    "file_name_template": "Default",
     "suffix": "",
     "baud_rate": "9600",
     "com_port": "COM7",
-    "buffer_size": "50",
+    "buffer_size": "10",
 }
 
 SETTINGS_FILE = "settings.json"
@@ -54,7 +54,6 @@ def save_settings(settings_file, settings):
 
 
 def get_formatted_date(format_str, suffix=""):
-    print(suffix)
     format_str = format_str.replace("%o", suffix)
     return datetime.now().strftime(format_str)
 
@@ -77,7 +76,6 @@ class SettingsWindow:
         self.settings_window.title("Settings")
         self.settings_window.geometry("460x200")
        # self.settings_window.resizable(False, False)
-        self.settings_window.lift()
         # Folder Selection
         self.folder_label = ctk.CTkLabel(self.settings_window, text="Select Folder:")
         self.folder_label.grid(row=0, column=0, padx=10, pady=5, sticky=ctk.W)
@@ -141,7 +139,7 @@ class SettingsWindow:
         self.save_and_exit_btn.pack(anchor=ctk.CENTER, side=ctk.LEFT, padx=pad_x, pady=40)
 
         self.discard_button = ctk.CTkButton(
-            self.frame_dialog_btns,
+                self.frame_dialog_btns,
             text="Discard Settings",
             command=self.settings_window.destroy,
         )
@@ -153,6 +151,8 @@ class SettingsWindow:
     def combo_format_selected(self, choice):
         foramtted_date = get_formatted_date(file_name_template.get(choice, choice))
         self.file_template_render.set(foramtted_date)
+        self.template_var.set(choice)
+        settings["file_name_template"] = choice
 
     def load_settings(self):
         self.folder_var.set(settings["folder"])
@@ -164,7 +164,7 @@ class SettingsWindow:
             )
         )
         self.file_template_render.set(foramtted_date)
-
+        self.template_var.set(settings["file_name_template"])
         self.buffer_var.set(settings["buffer_size"])
 
     def browse_folder(self):
@@ -174,7 +174,8 @@ class SettingsWindow:
 
     def settings_ok(self):
         settings["folder"] = self.folder_var.get()
-        settings["file_name_template"] = self.template_var.get()
+        settings["file_name_template"] = self.combo_format.get()
+        
         settings["buffer_size"] = self.buffer_var.get()
         if self.on_distroy:
             self.on_distroy()
