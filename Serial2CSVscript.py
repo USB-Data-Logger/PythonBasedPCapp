@@ -420,15 +420,14 @@ class SerialMonitor:
     def read_serial_data(self):
         if self.monitoring and self.serial_port and self.serial_port.is_open:
             data = self.serial_port.readline()
-            if data:
-                timestamped_data = f"{datetime.now().strftime('%Y-%m-%d,%H:%M:%S.%f')[:-3]}, {data.decode().strip()}\n"
-                self.data_buffer.append(timestamped_data)
+            timestamped_data = f"{datetime.now().strftime('%Y-%m-%d,%H:%M:%S.%f')[:-3]}, {data.decode().strip()}\n"
+            self.data_buffer.append(timestamped_data)
 
-                if len(self.data_buffer) >= int(settings["buffer_size"]):
-                    self.flush_buffer()
-                self.update_row_count()
-                self.update_output()
-                self.root.after(100, self.read_serial_data)
+            if len(self.data_buffer) >= int(settings["buffer_size"]):
+                self.flush_buffer()
+            self.update_row_count()
+            self.update_output()
+            self.root.after(100, self.read_serial_data)
 
     def flush_buffer(self):
         with open(self.file_path, "a") as file:
