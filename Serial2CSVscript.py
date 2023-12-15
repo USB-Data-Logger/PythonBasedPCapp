@@ -6,6 +6,7 @@ import json
 import os
 from customtkinter import filedialog
 
+from tktooltip import ToolTip
 ctk.set_appearance_mode("dark")
 default_setting = {
     "folder": os.getcwd(),
@@ -71,19 +72,18 @@ class SettingsWindow:
         self.settings_window = ctk.CTkToplevel(parent)
 
         self.settings_window.configure()
-        # self.settings_window.columnconfigure(0, weight=1)
-        # self.settings_windorc.rowconfigure(0, weight=1)
         self.settings_window.title("Settings")
-        self.settings_window.geometry("450x200")
-        # self.settings_window.resizable(False, False)
+        self.settings_window.geometry("460x200")
+        self.settings_window.resizable(False, False)
         # Folder Selection
         self.folder_label = ctk.CTkLabel(self.settings_window, text="Select Folder:")
         self.folder_label.grid(row=0, column=0, padx=10, pady=5, sticky=ctk.W)
         self.folder_var = ctk.StringVar()
         self.folder_entry = ctk.CTkEntry(
-            self.settings_window, textvariable=self.folder_var
-        )
+            self.settings_window, textvariable=self.folder_var,        )
         self.folder_entry.grid(row=0, column=1, padx=10, pady=5, sticky=ctk.W)
+        ToolTip(self.folder_entry, msg=self.folder_var.get)
+
         self.browse_button = ctk.CTkButton(
             self.settings_window, text="Browse", command=self.browse_folder
         )
@@ -122,7 +122,7 @@ class SettingsWindow:
         self.buffer_label.grid(row=3, column=0, padx=10, pady=5, sticky=ctk.W)
         self.buffer_var = ctk.StringVar()
         self.buffer_entry = ctk.CTkEntry(
-            self.settings_window, width=10, textvariable=self.buffer_var
+            self.settings_window, textvariable=self.buffer_var
         )
         self.buffer_entry.grid(row=3, column=1, padx=10, pady=5, sticky=ctk.W)
 
@@ -130,7 +130,7 @@ class SettingsWindow:
 
         # Save and Exit Button
 
-        self.frame_dialog_btns = ctk.CTkFrame(self.settings_window)
+        self.frame_dialog_btns = ctk.CTkFrame(self.settings_window,fg_color="transparent")
 
         self.save_and_exit_btn = ctk.CTkButton(
             self.frame_dialog_btns, text="Save And Exit", command=self.settings_ok
@@ -146,7 +146,6 @@ class SettingsWindow:
         self.discard_button.pack(anchor=ctk.CENTER, side=ctk.LEFT, padx=pad_x)
         self.frame_dialog_btns.grid(row=4, columnspan=3, pady=pad_y)
         self.load_settings()
-
     def combo_format_selected(self, choice):
         foramtted_date = get_formatted_date(file_name_template.get(choice, choice))
         self.file_template_render.set(foramtted_date)
@@ -191,8 +190,10 @@ class SerialMonitor:
         # self.root.resizable(False, False)
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
-        # self.root.resizable(False, False) # to make thing more flexiabel
+        self.root.resizable(False, False) # to make thing more flexiabel
         self.root.configure()
+
+        self.root.grid_columnconfigure((0), weight=1)
 
         self.serial_port = None
 
@@ -248,7 +249,7 @@ class SerialMonitor:
         )
         self.combo_com_port.grid(row=1, column=0, padx=pad_x, sticky=ctk.W)
         self.combo_com_port.set(settings["com_port"])
-
+        ToolTip(self.combo_com_port, msg="You can Enter Custom value")
 
         self.combo_baud_rate = ctk.CTkComboBox(
             self.root,
@@ -257,6 +258,7 @@ class SerialMonitor:
         )
         self.combo_baud_rate.grid(row=1, column=1, padx=pad_x, sticky=ctk.W)
         self.combo_baud_rate.set(settings["baud_rate"])
+        ToolTip(self.combo_baud_rate, msg="You can Enter Custom value")
 
         ctk.CTkLabel(
             self.root,
@@ -265,9 +267,9 @@ class SerialMonitor:
                 "impack",
                 10,
             ),
-        ).grid(row=3, columnspan=3)
+        ).grid(row=3, columnspan=2,sticky="W")
 
-        frame = ctk.CTkFrame(master=root)
+        frame = ctk.CTkFrame(master=root,fg_color="transparent")
 
         self.lbl_prefix = ctk.CTkLabel(frame)
         self.lbl_prefix.grid(row=0, column=0)
@@ -279,32 +281,31 @@ class SerialMonitor:
         self.file_suffix_entry.grid(row=0, column=1)
         ctk.CTkLabel(frame, text=".csv").grid(row=0, column=2)
 
-        frame.grid(row=4, columnspan=2, sticky=ctk.W, pady=10)
+        frame.grid(row=3, columnspan=3, sticky="NESW", pady=10)
         self.start_stop_button = ctk.CTkButton(
             self.root, text="Start Monitoring", command=self.toggle_monitoring
         )
 
-        self.start_stop_button.grid(row=5, column=0)
+        self.start_stop_button.grid(row=4, column=0)
         self.setting_btn = ctk.CTkButton(
             self.root, text="Settings", command=self.open_settings
         )
 
-        self.setting_btn.grid(row=5, column=1)
+        self.setting_btn.grid(row=4, column=1)
 
-        self.status_label = ctk.CTkButton(self.root, text="Monitoring Console")
-        self.status_label.grid(row=6, column=0)
-
-        # Add Output Window (Text widget)
+        self.status_label = ctk.CTkLabel(self.root, text="Monitoring Console")
+        self.status_label.grid(row=5, columnspan=2)
 
         self.output_window = ctk.CTkTextbox(
             self.root,
             wrap=ctk.WORD,  # setting for how many line
+
         )
-        self.output_window.grid(row=7, columnspan=5, sticky="NESW")
+        self.output_window.grid(row=6, columnspan=3, sticky="NESW")
 
         # Set the state of the ScrolledText widget to DISABLED
         self.output_window.configure(state=ctk.DISABLED)
-
+        ToolTip(self.output_window, msg="Message")
     def com_port_clicked(self, choice):
         settings["com_port"] = choice
 
@@ -319,6 +320,8 @@ class SerialMonitor:
         self.update_lbl_prefix()
 
     def toggle_monitoring(self):
+        settings["com_port"] = self.combo_com_port.get()
+        settings["baud_rate"] = self.combo_baud_rate.get()
         if not self.monitoring:
             # Start monitoring
             self.file_name = self.get_file_name()  # Update the file name
