@@ -363,7 +363,7 @@ class SerialMonitor:
                 self.serial_port = serial.Serial(
                     settings["com_port"], int(settings["baud_rate"]), timeout=1
                 )
-                self.start_stop_button["text"] = "Stop Monitoring"
+                self.start_stop_button.configure(text =  "Stop Monitoring")
                 self.monitoring = True
                 self.append_output(
                     f"Monitoring started, saving to {self.file_name}", end=""
@@ -374,9 +374,10 @@ class SerialMonitor:
                 self.append_output(f"Error: {e}")
         else:
             # Stop monitoring
+            
             if self.serial_port and self.serial_port.is_open:
                 self.serial_port.close()
-            self.start_stop_button["text"] = "Start Monitoring"
+            self.start_stop_button.configure(text = "Start Monitoring")
             self.monitoring = False
             self.flush_buffer()  # Flush buffer when stopping
             self.append_output("Monitoring stopped")
