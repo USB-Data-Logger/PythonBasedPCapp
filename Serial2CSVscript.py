@@ -4,7 +4,8 @@ from serial.tools import list_ports
 from datetime import datetime
 import json
 import os
-from customtkinter import filedialog
+
+from plyer import filechooser
 
 from tktooltip import ToolTip
 ctk.set_appearance_mode("dark")
@@ -146,6 +147,7 @@ class SettingsWindow:
         self.discard_button.pack(anchor=ctk.CENTER, side=ctk.LEFT, padx=pad_x)
         self.frame_dialog_btns.grid(row=4, columnspan=3, pady=pad_y)
         self.load_settings()
+
     def combo_format_selected(self, choice):
         foramtted_date = get_formatted_date(file_name_template.get(choice, choice))
         self.file_template_render.set(foramtted_date)
@@ -164,7 +166,7 @@ class SettingsWindow:
         self.buffer_var.set(settings["buffer_size"])
 
     def browse_folder(self):
-        folder_selected = filedialog.askdirectory()
+        folder_selected = filechooser.choose_dir()[0]
         if folder_selected:
             self.folder_var.set(folder_selected)
 
