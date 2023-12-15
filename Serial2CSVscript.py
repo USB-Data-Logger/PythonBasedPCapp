@@ -11,19 +11,19 @@ from tktooltip import ToolTip
 ctk.set_appearance_mode("dark")
 default_setting = {
     "folder": os.getcwd(),
-    "file_name_template": "With No Suffix",
+    "file_name_template": "Default",
     "suffix": "",
     "baud_rate": "9600",
     "com_port": "COM7",
-    "buffer_size": "50",
+    "buffer_size": "10",
 }
 
 SETTINGS_FILE = "settings.json"
 
 file_name_template = {
-    "Default": "%Y-%m-%d %H.%M.%S %o",
-    "Date only": "%Y-%m-%d %o",
-    "With No Suffix": "%Y-%m-%d %H.%M.%S",
+    "Default (Date+time+Optional suffix)": "%Y-%m-%d %H.%M.%S %o",
+    "Date only (Date+Optional suffix)": "%Y-%m-%d %o",
+    "User Input": "%Y-%m-%d %H.%M.%S",
 }
 
 pad_x = 10
@@ -54,7 +54,6 @@ def save_settings(settings_file, settings):
 
 
 def get_formatted_date(format_str, suffix=""):
-    print(suffix)
     format_str = format_str.replace("%o", suffix)
     return datetime.now().strftime(format_str)
 
@@ -78,8 +77,8 @@ class SettingsWindow:
         self.settings_window.configure()
         self.settings_window.title("Settings")
         self.settings_window.geometry("460x200")
-       # self.settings_window.resizable(False, False)
-        self.settings_window.lift()
+        # self.settings_window.resizable(False, False)
+
         # Folder Selection
         self.folder_label = ctk.CTkLabel(self.settings_window, text="Select Folder Location:")
         self.folder_label.place(x=10,y=7)
@@ -119,7 +118,9 @@ class SettingsWindow:
         # Buffer Size
         self.buffer_label = ctk.CTkLabel(self.settings_window, text="Buffer Size:")
         self.buffer_label.place(x=20,y=110)
-        self.buffer_var = ctk.StringVar('10')
+
+        self.buffer_var = ctk.StringVar()
+
         self.buffer_entry = ctk.CTkEntry(
             self.settings_window, textvariable=self.buffer_var
         )
@@ -143,11 +144,14 @@ class SettingsWindow:
         self.discard_button.place(x=310,y=160)
 
         self.frame_dialog_btns.grid(row=4, columnspan=3, pady=pad_y)
+
         self.load_settings()
 
     def combo_format_selected(self, choice):
         foramtted_date = get_formatted_date(file_name_template.get(choice, choice))
         self.file_template_render.set(foramtted_date)
+        self.template_var.set(choice)
+        settings["file_name_template"] = choice
 
     def load_settings(self):
         self.folder_var.set(settings["folder"])
@@ -159,7 +163,7 @@ class SettingsWindow:
             )
         )
         self.file_template_render.set(foramtted_date)
-
+        self.template_var.set(settings["file_name_template"])
         self.buffer_var.set(settings["buffer_size"])
 
     def browse_folder(self):
@@ -169,7 +173,8 @@ class SettingsWindow:
 
     def settings_ok(self):
         settings["folder"] = self.folder_var.get()
-        settings["file_name_template"] = self.template_var.get()
+        settings["file_name_template"] = self.combo_format.get()
+        
         settings["buffer_size"] = self.buffer_var.get()
         if self.on_distroy:
             self.on_distroy()
