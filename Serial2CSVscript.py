@@ -101,7 +101,6 @@ class SettingsWindow:
         self.template_label = ctk.CTkLabel(
             self.settings_window, text="File Name Template:"
         )
-        self.template_label.
         self.template_label.place(x=10,y=50)
         self.template_var = ctk.StringVar()
         self.combo_format = ctk.CTkComboBox(
