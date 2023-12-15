@@ -72,6 +72,8 @@ class SettingsWindow:
 
         self.on_distroy = on_distroy
         self.settings_window = ctk.CTkToplevel(parent)
+        self.settings_window.transient(self.parent)
+        self.settings_window.grab_set()
 
         self.settings_window.configure()
         self.settings_window.title("Settings")
