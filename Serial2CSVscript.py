@@ -11,7 +11,7 @@ from tktooltip import ToolTip
 ctk.set_appearance_mode("dark")
 default_setting = {
     "folder": os.getcwd(),
-    "file_name_template": "Default",
+    "file_name_template": "Default (Date+time+Optional suffix)",
     "suffix": "",
     "baud_rate": "9600",
     "com_port": "COM7",
@@ -23,7 +23,7 @@ SETTINGS_FILE = "settings.json"
 file_name_template = {
     "Default (Date+time+Optional suffix)": "%Y-%m-%d %H.%M.%S %o",
     "Date only (Date+Optional suffix)": "%Y-%m-%d %o",
-    "User Input": "%Y-%m-%d %H.%M.%S",
+    "User Input": "User Input",
 }
 
 pad_x = 10
@@ -72,12 +72,13 @@ class SettingsWindow:
         self.on_distroy = on_distroy
         self.settings_window = ctk.CTkToplevel(parent)
         self.settings_window.transient(self.parent)
-        self.settings_window.grab_set()
+        if not os.name == "posix":
+            self.settings_window.grab_set()
 
         self.settings_window.configure()
         self.settings_window.title("Settings")
         self.settings_window.geometry("460x200")
-        # self.settings_window.resizable(False, False)
+        self.settings_window.resizable(False, False)
 
         # Folder Selection
         self.folder_label = ctk.CTkLabel(self.settings_window, text="Select Folder Location:")
@@ -109,6 +110,7 @@ class SettingsWindow:
             self.settings_window,
             values=[i for i in file_name_template.keys()],
             command=self.combo_format_selected,
+            width=300
         )
         self.combo_format.place(x=150,y=50)
 
@@ -142,14 +144,15 @@ class SettingsWindow:
                                             command=self.settings_window.destroy,
         )
         self.discard_button.place(x=310,y=160)
-
-        self.frame_dialog_btns.grid(row=4, columnspan=3, pady=pad_y)
-
         self.load_settings()
 
     def combo_format_selected(self, choice):
         foramtted_date = get_formatted_date(file_name_template.get(choice, choice))
-        self.file_template_render.set(foramtted_date)
+        if choice != "User Input":
+            self.file_template_render.set(foramtted_date+"[Optional suffix].csv")
+        else:
+            self.file_template_render.set(foramtted_date+".csv")
+
         self.template_var.set(choice)
         settings["file_name_template"] = choice
 
@@ -162,12 +165,20 @@ class SettingsWindow:
                 settings["file_name_template"],
             )
         )
-        self.file_template_render.set(foramtted_date)
+        if settings["file_name_template"] != "User Input":
+            self.file_template_render.set(foramtted_date+"[Optional suffix].csv")
+        else:
+            self.file_template_render.set(foramtted_date+".csv")
+
         self.template_var.set(settings["file_name_template"])
         self.buffer_var.set(settings["buffer_size"])
 
     def browse_folder(self):
-        folder_selected = filechooser.choose_dir()[0]
+        folder_selected = filechooser.choose_dir()
+        if folder_selected:
+            folder_selected = folder_selected[0]
+        else:
+            folder_selected = settings["folder"]
         if folder_selected:
             self.folder_var.set(folder_selected)
 
