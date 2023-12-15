@@ -72,7 +72,7 @@ class SettingsWindow:
         self.on_distroy = on_distroy
         self.settings_window = ctk.CTkToplevel(parent)
         self.settings_window.transient(self.parent)
-        #self.settings_window.grab_set()
+        self.settings_window.grab_set()
 
         self.settings_window.configure()
         self.settings_window.title("Settings")
@@ -118,7 +118,9 @@ class SettingsWindow:
         # Buffer Size
         self.buffer_label = ctk.CTkLabel(self.settings_window, text="Buffer Size:")
         self.buffer_label.place(x=20,y=110)
+
         self.buffer_var = ctk.StringVar()
+
         self.buffer_entry = ctk.CTkEntry(
             self.settings_window, textvariable=self.buffer_var
         )
@@ -140,6 +142,9 @@ class SettingsWindow:
                                             command=self.settings_window.destroy,
         )
         self.discard_button.place(x=310,y=160)
+
+        self.frame_dialog_btns.grid(row=4, columnspan=3, pady=pad_y)
+
         self.load_settings()
 
     def combo_format_selected(self, choice):
