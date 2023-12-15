@@ -79,74 +79,68 @@ class SettingsWindow:
        # self.settings_window.resizable(False, False)
         self.settings_window.lift()
         # Folder Selection
-        self.folder_label = ctk.CTkLabel(self.settings_window, text="Select Folder:")
-        self.folder_label.grid(row=0, column=0, padx=10, pady=5, sticky=ctk.W)
+        self.folder_label = ctk.CTkLabel(self.settings_window, text="Select Folder Location:")
+        self.folder_label.place(x=10,y=7)
         self.folder_var = ctk.StringVar()
         self.folder_entry = ctk.CTkEntry(
-            self.settings_window, textvariable=self.folder_var,        )
-        self.folder_entry.grid(row=0, column=1, padx=10, pady=5, sticky=ctk.W)
+            self.settings_window,
+            width=210,
+            textvariable=self.folder_var,)
+        self.folder_entry.place(x=150,y=7)
         ToolTip(self.folder_entry, msg=self.folder_var.get)
 
         self.browse_button = ctk.CTkButton(
-            self.settings_window, text="Browse", command=self.browse_folder
+            self.settings_window, text="Browse",
+            width=80,
+            fg_color="#0F0F0F",
+            hover_color='#474747',
+            command=self.browse_folder
         )
-        self.browse_button.grid(row=0, column=2, padx=5, pady=5, sticky=ctk.W)
+        self.browse_button.place(x=373,y=7)
 
         # File Name Template
         self.template_label = ctk.CTkLabel(
             self.settings_window, text="File Name Template:"
         )
-        self.template_label.grid(row=1, column=0, padx=10, pady=5, sticky=ctk.W)
+        self.template_label.
+        self.template_label.place(x=10,y=50)
         self.template_var = ctk.StringVar()
         self.combo_format = ctk.CTkComboBox(
             self.settings_window,
             values=[i for i in file_name_template.keys()],
             command=self.combo_format_selected,
         )
-        self.combo_format.grid(
-            row=1,
-            column=1,
-            padx=10,
-            pady=5,
-            sticky=ctk.W,
-        )
+        self.combo_format.place(x=150,y=50)
 
         self.file_template_render = ctk.StringVar()
-        ctk.CTkLabel(self.settings_window, textvariable=self.file_template_render).grid(
-            row=2,
-            columnspan=3,
-            padx=pad_x,
-            sticky=ctk.NS,
-            pady=pad_y,
-        )
+        ctk.CTkLabel(self.settings_window,font=('impack',15,'bold'),width=150, textvariable=self.file_template_render).place(x=150,y=80)
 
         # Buffer Size
         self.buffer_label = ctk.CTkLabel(self.settings_window, text="Buffer Size:")
-        self.buffer_label.grid(row=3, column=0, padx=10, pady=5, sticky=ctk.W)
-        self.buffer_var = ctk.StringVar()
+        self.buffer_label.place(x=20,y=110)
+        self.buffer_var = ctk.StringVar('10')
         self.buffer_entry = ctk.CTkEntry(
             self.settings_window, textvariable=self.buffer_var
         )
-        self.buffer_entry.grid(row=3, column=1, padx=10, pady=5, sticky=ctk.W)
-
-        # OK Button
+        self.buffer_entry.place(x=150,y=110)
 
         # Save and Exit Button
-
-        self.frame_dialog_btns = ctk.CTkFrame(self.settings_window,fg_color="transparent")
-
         self.save_and_exit_btn = ctk.CTkButton(
-            self.frame_dialog_btns, text="Save And Exit", command=self.settings_ok
+            self.settings_window, text="Save And Exit",
+            fg_color="#0F0F0F",
+            hover_color='#474747',
+            command=self.settings_ok
         )
-        self.save_and_exit_btn.pack(anchor=ctk.CENTER, side=ctk.LEFT, padx=pad_x, pady=40)
+        self.save_and_exit_btn.place(x=150,y=160)
 
-        self.discard_button = ctk.CTkButton(
-            self.frame_dialog_btns,
-            text="Discard Settings",
-            command=self.settings_window.destroy,
+        self.discard_button = ctk.CTkButton(self.settings_window,
+                                            text="Discard Settings",
+                                            fg_color="#0F0F0F",
+                                            hover_color='#474747',
+                                            command=self.settings_window.destroy,
         )
+        self.discard_button.place(x=310,y=160)
 
-        self.discard_button.pack(anchor=ctk.CENTER, side=ctk.LEFT, padx=pad_x)
         self.frame_dialog_btns.grid(row=4, columnspan=3, pady=pad_y)
         self.load_settings()
 
