@@ -439,6 +439,3 @@ if __name__ == "__main__":
     root = ctk.CTk()
     app = SerialMonitor(root)
     root.mainloop()
-#     root = tk.Tk()
-#     app = SerialMonitor(root)
-#     root.mainloop()
