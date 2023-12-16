@@ -24,12 +24,11 @@ SETTINGS_FILE = "settings.json"
 file_name_template = {
     "Default (Date+time+Optional suffix)": "%Y-%m-%d %H.%M.%S %o",
     "Date only (Date+Optional suffix)": "%Y-%m-%d %o",
-    "User Input": "",
+    "User Input": "%o",
 }
 
 pad_x = 10
 pad_y = 10
-
 
 def load_settings(settings_path):
     if os.path.isfile(settings_path):
@@ -43,7 +42,7 @@ def load_settings(settings_path):
 
 settings = load_settings(SETTINGS_FILE)
 
-
+place_holder = "Enter File name" if settings["file_name_template"]=="User Input"  else "Optional suffix"
 def _get_com_ports():
     return [port.device for port in list_ports.comports()]
 
@@ -148,11 +147,15 @@ class SettingsWindow:
         self.load_settings()
 
     def combo_format_selected(self, choice):
+        global place_holder
         foramtted_date = get_formatted_date(file_name_template.get(choice, choice))
         if choice != "User Input":
             self.file_template_render.set(foramtted_date+"[Optional suffix].csv")
+            place_holder = "Optional suffix"
         else:
             self.file_template_render.set(foramtted_date+"[User must input file name].csv")
+
+            place_holder =  "Enter File Name"
 
         self.template_var.set(choice)
         settings["file_name_template"] = choice
@@ -160,6 +163,7 @@ class SettingsWindow:
     def load_settings(self):
         self.folder_var.set(settings["folder"])
         self.template_var.set(settings["file_name_template"])
+        self.combo_format.set(settings["file_name_template"])
         foramtted_date = get_formatted_date(
             file_name_template.get(
                 settings["file_name_template"],
@@ -302,7 +306,7 @@ class SerialMonitor:
         self.file_suffix_entry = ctk.CTkEntry(
             self.root,
             # Here the placeholder text needs to be updated accordingly
-            placeholder_text="optional suffix",
+            placeholder_text=place_holder,
         )
 
         self.file_suffix_entry.place(x=155,y=90)
@@ -381,6 +385,7 @@ class SerialMonitor:
 
     def settings_window_distroy(self):
         save_settings(SETTINGS_FILE, settings)
+        self.file_suffix_entry.configure(placeholder_text=place_holder)
         self.update_lbl_prefix()
 
     def toggle_monitoring(self):
