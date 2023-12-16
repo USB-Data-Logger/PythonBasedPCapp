@@ -23,7 +23,7 @@ SETTINGS_FILE = "settings.json"
 file_name_template = {
     "Default (Date+time+Optional suffix)": "%Y-%m-%d %H.%M.%S %o",
     "Date only (Date+Optional suffix)": "%Y-%m-%d %o",
-    "User Input": "User Input",
+    "User Input": "",
 }
 
 pad_x = 10
@@ -151,7 +151,7 @@ class SettingsWindow:
         if choice != "User Input":
             self.file_template_render.set(foramtted_date+"[Optional suffix].csv")
         else:
-            self.file_template_render.set(foramtted_date+".csv")
+            self.file_template_render.set(foramtted_date+"[User must input file name].csv")
 
         self.template_var.set(choice)
         settings["file_name_template"] = choice
@@ -300,6 +300,7 @@ class SerialMonitor:
         self.lbl_prefix.place(x=30,y=90)
         self.file_suffix_entry = ctk.CTkEntry(
             self.root,
+            # Here the placeholder text needs to be updated accordingly
             placeholder_text="optional suffix",
         )
 
