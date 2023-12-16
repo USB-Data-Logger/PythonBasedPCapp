@@ -361,6 +361,8 @@ class SerialMonitor:
 
         # Create a new window or Use an existing widget to disply the image
         image_window = ctk.CTkToplevel(root)
+        image_window.transient(self.root)
+        image_window.grab_set()
         image_window.title("Help Image")
 
         # Create a label in the new window to display the image
