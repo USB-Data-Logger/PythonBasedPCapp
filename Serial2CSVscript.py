@@ -6,8 +6,6 @@ import json
 import os
 import logging
 from plyer import filechooser
-from PIL import Image, ImageTk
-
 from tktooltip import ToolTip
 ctk.set_appearance_mode("dark")
 default_setting = {
