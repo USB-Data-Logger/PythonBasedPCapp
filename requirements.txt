@@ -2,3 +2,4 @@ pyserial==3.5
 customtkinter==5.2.1
 tkinter-tooltip==2.2.0
 plyer==2.1.0
+packaging==23.2
