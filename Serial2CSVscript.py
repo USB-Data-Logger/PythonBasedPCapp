@@ -6,6 +6,7 @@ import json
 import os
 import logging
 from plyer import filechooser
+from PIL import Image, ImageTk
 
 from tktooltip import ToolTip
 ctk.set_appearance_mode("dark")
@@ -318,7 +319,7 @@ class SerialMonitor:
         self.help_btn = ctk.CTkButton(
             self.root,width=80, text="Help",
              fg_color="#0F0F0F",
-            hover_color='#474747', command=self.open_settings
+            hover_color='#474747', command=self.open_help
         )
 
         self.help_btn.place(x=360,y=90)
@@ -349,8 +350,24 @@ class SerialMonitor:
         # Set the state of the ScrolledText widget to DISABLED
         self.output_window.configure(state=ctk.DISABLED)
         ToolTip(self.output_window, msg="Message")
+    
+    # Function to open Help Image
+    def open_help(self):
+        # Load the PNG file
+        image = Image.open("HelpImage.png")
 
-        
+        # Convert the image to a format which Tkinter can use
+        photo = ImageTk.PhotoImage(image)
+
+        # Create a new window or Use an existing widget to disply the image
+        image_window = ctk.CTkToplevel(root)
+        image_window.title("Help Image")
+
+        # Create a label in the new window to display the image
+        image_label = ctk.CTkLabel(image_window, image=photo)
+        image_label.image = photo # Keep a reference
+        image_label.pack()
+
     def com_port_clicked(self, choice):
         settings["com_port"] = choice
 
