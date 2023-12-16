@@ -361,18 +361,17 @@ class SerialMonitor:
         image = Image.open("HelpImage.png")
 
         # Convert the image to a format which Tkinter can use
-        photo = ImageTk.PhotoImage(image)
+        photo = ctk.CTkImage(light_image = image,size= image.size)
 
         # Create a new window or Use an existing widget to disply the image
         image_window = ctk.CTkToplevel(root)
         image_window.transient(self.root)
-        image_window.grab_set()
         image_window.title("Help Image")
 
         # Create a label in the new window to display the image
-        image_label = ctk.CTkLabel(image_window, image=photo)
-        image_label.image = photo # Keep a reference
-        image_label.pack()
+        image_label = ctk.CTkLabel(image_window, image=photo,text="")
+        #image_label.image = photo # Keep a reference
+        image_label.pack(fill=ctk.BOTH,expand = True)
 
     def com_port_clicked(self, choice):
         settings["com_port"] = choice
