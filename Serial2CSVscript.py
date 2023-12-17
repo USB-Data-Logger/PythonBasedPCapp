@@ -7,6 +7,10 @@ import os
 import logging
 from plyer import filechooser
 from tktooltip import ToolTip
+from PIL import Image
+from tkinter import PhotoImage
+
+
 ctk.set_appearance_mode("dark")
 default_setting = {
     "folder": os.getcwd(),
@@ -18,6 +22,8 @@ default_setting = {
 }
 
 SETTINGS_FILE = "settings.json"
+ASSET_PATH = "asset"
+
 
 file_name_template = {
     "Default (Date+time+Optional suffix)": "%Y-%m-%d %H.%M.%S %o",
@@ -27,6 +33,9 @@ file_name_template = {
 
 pad_x = 10
 pad_y = 10
+
+def get_resources(resource):
+    return os.path.join(ASSET_PATH, resource)
 
 def load_settings(settings_path):
     if os.path.isfile(settings_path):
@@ -40,7 +49,13 @@ def load_settings(settings_path):
 
 settings = load_settings(SETTINGS_FILE)
 
-place_holder = "Enter File name" if settings["file_name_template"]=="User Input"  else "Optional suffix"
+place_holder = (
+    "Enter File name"
+    if settings["file_name_template"] == "User Input"
+    else "Optional suffix"
+)
+
+
 def _get_com_ports():
     return [port.device for port in list_ports.comports()]
 
@@ -70,90 +85,101 @@ class SettingsWindow:
         self.on_distroy = on_distroy
         self.settings_window = ctk.CTkToplevel(parent)
         self.settings_window.transient(self.parent)
-        if not os.name == "posix":
-            self.settings_window.grab_set()
-
+       
         self.settings_window.configure()
         self.settings_window.title("Settings")
         self.settings_window.geometry("460x200")
         self.settings_window.resizable(False, False)
 
         # Folder Selection
-        self.folder_label = ctk.CTkLabel(self.settings_window, text="Select Folder Location:")
-        self.folder_label.place(x=10,y=7)
+        self.folder_label = ctk.CTkLabel(
+            self.settings_window, text="Select Folder Location:"
+        )
+        self.folder_label.place(x=10, y=7)
         self.folder_var = ctk.StringVar()
         self.folder_entry = ctk.CTkEntry(
             self.settings_window,
             width=210,
-            textvariable=self.folder_var,)
-        self.folder_entry.place(x=150,y=7)
+            textvariable=self.folder_var,
+        )
+        self.folder_entry.place(x=150, y=7)
         ToolTip(self.folder_entry, msg=self.folder_var.get)
 
         self.browse_button = ctk.CTkButton(
-            self.settings_window, text="Browse",
+            self.settings_window,
+            text="Browse",
             width=80,
             fg_color="#0F0F0F",
-            hover_color='#474747',
-            command=self.browse_folder
+            hover_color="#474747",
+            command=self.browse_folder,
         )
-        self.browse_button.place(x=373,y=7)
+        self.browse_button.place(x=373, y=7)
 
         # File Name Template
         self.template_label = ctk.CTkLabel(
             self.settings_window, text="File Name Template:"
         )
-        self.template_label.place(x=10,y=50)
+        self.template_label.place(x=10, y=50)
         self.template_var = ctk.StringVar()
         self.combo_format = ctk.CTkComboBox(
             self.settings_window,
             values=[i for i in file_name_template.keys()],
             command=self.combo_format_selected,
-            width=300
+            width=300,
         )
-        self.combo_format.place(x=150,y=50)
+        self.combo_format.place(x=150, y=50)
 
         self.file_template_render = ctk.StringVar()
-        ctk.CTkLabel(self.settings_window,font=('impack',15,'bold'),width=150, textvariable=self.file_template_render).place(x=150,y=80)
+        ctk.CTkLabel(
+            self.settings_window,
+            font=("impack", 15, "bold"),
+            width=150,
+            textvariable=self.file_template_render,
+        ).place(x=150, y=80)
 
         # Buffer Size
         self.buffer_label = ctk.CTkLabel(self.settings_window, text="Buffer Size:")
-        self.buffer_label.place(x=20,y=110)
+        self.buffer_label.place(x=20, y=110)
 
         self.buffer_var = ctk.StringVar()
 
         self.buffer_entry = ctk.CTkEntry(
             self.settings_window, textvariable=self.buffer_var
         )
-        self.buffer_entry.place(x=150,y=110)
+        self.buffer_entry.place(x=150, y=110)
 
         # Save and Exit Button
         self.save_and_exit_btn = ctk.CTkButton(
-            self.settings_window, text="Save And Exit",
+            self.settings_window,
+            text="Save And Exit",
             fg_color="#0F0F0F",
-            hover_color='#474747',
-            command=self.settings_ok
+            hover_color="#474747",
+            command=self.settings_ok,
         )
-        self.save_and_exit_btn.place(x=150,y=160)
+        self.save_and_exit_btn.place(x=150, y=160)
 
-        self.discard_button = ctk.CTkButton(self.settings_window,
-                                            text="Discard Settings",
-                                            fg_color="#0F0F0F",
-                                            hover_color='#474747',
-                                            command=self.settings_window.destroy,
+        self.discard_button = ctk.CTkButton(
+            self.settings_window,
+            text="Discard Settings",
+            fg_color="#0F0F0F",
+            hover_color="#474747",
+            command=self.settings_window.destroy,
         )
-        self.discard_button.place(x=310,y=160)
+        self.discard_button.place(x=310, y=160)
         self.load_settings()
 
     def combo_format_selected(self, choice):
         global place_holder
         foramtted_date = get_formatted_date(file_name_template.get(choice, choice))
         if choice != "User Input":
-            self.file_template_render.set(foramtted_date+"[Optional suffix].csv")
+            self.file_template_render.set(foramtted_date + "[Optional suffix].csv")
             place_holder = "Optional suffix"
         else:
-            self.file_template_render.set(foramtted_date+"[User must input file name].csv")
+            self.file_template_render.set(
+                foramtted_date + "[User must input file name].csv"
+            )
 
-            place_holder =  "Enter File Name"
+            place_holder = "Enter File Name"
 
         self.template_var.set(choice)
         settings["file_name_template"] = choice
@@ -169,9 +195,9 @@ class SettingsWindow:
             )
         )
         if settings["file_name_template"] != "User Input":
-            self.file_template_render.set(foramtted_date+"[Optional suffix].csv")
+            self.file_template_render.set(foramtted_date + "[Optional suffix].csv")
         else:
-            self.file_template_render.set(foramtted_date+".csv")
+            self.file_template_render.set(foramtted_date + ".csv")
 
         self.template_var.set(settings["file_name_template"])
         self.buffer_var.set(settings["buffer_size"])
@@ -188,12 +214,11 @@ class SettingsWindow:
     def settings_ok(self):
         settings["folder"] = self.folder_var.get()
         settings["file_name_template"] = self.combo_format.get()
-        
+
         settings["buffer_size"] = self.buffer_var.get()
         if self.on_distroy:
             self.on_distroy()
         self.settings_window.destroy()
-
 
 
 class SerialMonitor:
@@ -205,8 +230,6 @@ class SerialMonitor:
         self.root = root
         self.root.title("Serial to CSV")
 
-        # self.root.geometry("450x300")  # Set main window size to a 16:9 ratio
-        
         root_width = 450
         root_height = 300
         self.root.geometry(f"{root_width}x{root_height}")
@@ -217,10 +240,10 @@ class SerialMonitor:
 
         self.root.resizable(False, False)
 
-
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
-        # self.root.resizable(False, False) # to make thing more flexiabel
+        self.icon_image = PhotoImage(file=get_resources("Smallicon.png")) 
+        self.root.wm_iconphoto(True, self.icon_image)
         self.root.configure()
 
         self.root.grid_columnconfigure((0), weight=1)
@@ -242,8 +265,7 @@ class SerialMonitor:
         self.update_lbl_prefix()
 
     def save_log_file(self):
-        with open("log.txt", "a"
-        ) as log_file:
+        with open("log.txt", "a") as log_file:
             log_file.write(self.output_message)
 
     def update_lbl_prefix(self):
@@ -264,29 +286,41 @@ class SerialMonitor:
         self.root.destroy()
 
     def init_ui(self):
-        ctk.CTkLabel(self.root, text="COM Port:", font=("impack", 20, "bold")).place(x=30,y=0)
-        ctk.CTkLabel(self.root, text="Baud Rate:", font=("impack", 20, "bold")).place(x=320,y=0)
-        # grid(
-        #     row=0, column=1, padx=pad_x, sticky=ctk.W
-        # )
+        ctk.CTkLabel(self.root, text="COM Port:", font=("impack", 20, "bold")).place(
+            x=30, y=0
+        )
+        ctk.CTkLabel(self.root, text="Baud Rate:", font=("impack", 20, "bold")).place(
+            x=320, y=0
+        )
 
         self.combo_com_port = ctk.CTkComboBox(
             self.root,
             values=get_com_port(),
             command=self.com_port_clicked,
         )
-        self.combo_com_port.place(x=10,y=25)
+        self.combo_com_port.place(x=10, y=25)
         self.combo_com_port.set(settings["com_port"])
-        ToolTip(self.combo_com_port, msg="you can type custom com port number\n or path address in the window", bg='grey', fg='white')
+        ToolTip(
+            self.combo_com_port,
+            msg="you can type custom com port number\n or path address in the window",
+            bg="grey",
+            fg="white",
+        )
 
         self.combo_baud_rate = ctk.CTkComboBox(
             self.root,
             values=["9600", "19200", "38400", "57600", "115200"],
             command=self.baud_rate_clicked,
         )
-        self.combo_baud_rate.place(x=300,y=25)
+        self.combo_baud_rate.place(x=300, y=25)
         self.combo_baud_rate.set(settings["baud_rate"])
-        ToolTip(self.combo_baud_rate, msg="you can type custom value\nin the window if needed",bg='grey', fg='white',x_offset=-90)
+        ToolTip(
+            self.combo_baud_rate,
+            msg="you can type custom value\nin the window if needed",
+            bg="grey",
+            fg="white",
+            x_offset=-90,
+        )
 
         ctk.CTkLabel(
             self.root,
@@ -295,71 +329,72 @@ class SerialMonitor:
                 "impack",
                 15,
             ),
-        ).place(x=170,y=65)
-
-        # frame = ctk.CTkFrame(master=root,fg_color="transparent").place(x=300,y=1200)
+        ).place(x=170, y=65)
 
         self.lbl_prefix = ctk.CTkLabel(self.root)
-        self.lbl_prefix.place(x=30,y=90)
+        self.lbl_prefix.place(x=30, y=90)
         self.file_suffix_entry = ctk.CTkEntry(
             self.root,
             # Here the placeholder text needs to be updated accordingly
             placeholder_text=place_holder,
         )
 
-        self.file_suffix_entry.place(x=155,y=90)
-        ctk.CTkLabel(self.root, text=".csv").place(x=300,y=90)
-
+        self.file_suffix_entry.place(x=155, y=90)
+        ctk.CTkLabel(self.root, text=".csv").place(x=300, y=90)
 
         self.start_stop_button = ctk.CTkButton(
-            self.root, text="Start Monitoring", 
+            self.root,
+            text="Start Monitoring",
             fg_color="#0F0F0F",
-            hover_color='#474747',command=self.toggle_monitoring
+            hover_color="#474747",
+            command=self.toggle_monitoring,
         )
-        self.start_stop_button.place(x=155,y=130)
+        self.start_stop_button.place(x=155, y=130)
 
         self.help_btn = ctk.CTkButton(
-            self.root,width=80, text="Help",
-             fg_color="#0F0F0F",
-            hover_color='#474747', command=self.open_help
-        )
-
-        self.help_btn.place(x=360,y=90)
-        
-        self.setting_btn = ctk.CTkButton(
-            self.root,width=80, text="Settings",
+            self.root,
+            width=80,
+            text="Help",
             fg_color="#0F0F0F",
-            hover_color='#474747',
-            command=self.open_settings
+            hover_color="#474747",
+            command=self.open_help,
         )
 
-        self.setting_btn.place(x=360,y=130)
+        self.help_btn.place(x=360, y=90)
 
-        
+        self.setting_btn = ctk.CTkButton(
+            self.root,
+            width=80,
+            text="Settings",
+            fg_color="#0F0F0F",
+            hover_color="#474747",
+            command=self.open_settings,
+        )
+
+        self.setting_btn.place(x=360, y=130)
 
         self.status_label = ctk.CTkLabel(self.root, text="Monitoring Console")
-        self.status_label.place(x=10,y=138)
+        self.status_label.place(x=10, y=138)
 
         self.output_window = ctk.CTkTextbox(
             self.root,
-              width=430,
-              height=120,fg_color='#0F0F0F',
-              wrap=ctk.WORD  # setting for how many line
-
+            width=430,
+            height=120,
+            fg_color="#0F0F0F",
+            wrap=ctk.WORD,  # setting for how many line
         )
-        self.output_window.place(x=10,y=170)
+        self.output_window.place(x=10, y=170)
 
         # Set the state of the ScrolledText widget to DISABLED
         self.output_window.configure(state=ctk.DISABLED)
         ToolTip(self.output_window, msg="Message")
-    
+
     # Function to open Help Image
     def open_help(self):
         # Load the PNG file
-        image = Image.open("HelpImage.png")
-
+        image = Image.open(get_resources("HelpImage.png"))
         # Convert the image to a format which Tkinter can use
-        photo = ctk.CTkImage(light_image = image,size= image.size)
+        photo = ctk.CTkImage(light_image=image, size=image.size)
 
         # Create a new window or Use an existing widget to disply the image
         image_window = ctk.CTkToplevel(root)
@@ -367,9 +402,9 @@ class SerialMonitor:
         image_window.title("Help Image")
 
         # Create a label in the new window to display the image
-        image_label = ctk.CTkLabel(image_window, image=photo,text="")
-        #image_label.image = photo # Keep a reference
-        image_label.pack(fill=ctk.BOTH,expand = True)
+        image_label = ctk.CTkLabel(image_window, image=photo, text="")
+        # image_label.image = photo # Keep a reference
+        image_label.pack(fill=ctk.BOTH, expand=True)
 
     def com_port_clicked(self, choice):
         settings["com_port"] = choice
@@ -396,7 +431,7 @@ class SerialMonitor:
                 self.serial_port = serial.Serial(
                     settings["com_port"], int(settings["baud_rate"]), timeout=1
                 )
-                self.start_stop_button.configure(text =  "Stop Monitoring")
+                self.start_stop_button.configure(text="Stop Monitoring")
                 self.monitoring = True
                 self.append_output(
                     f"Monitoring started, saving to {self.file_name}", end=""
@@ -407,10 +442,10 @@ class SerialMonitor:
                 self.append_output(f"Error: {e}")
         else:
             # Stop monitoring
-            
+
             if self.serial_port and self.serial_port.is_open:
                 self.serial_port.close()
-            self.start_stop_button.configure(text = "Start Monitoring")
+            self.start_stop_button.configure(text="Start Monitoring")
             self.monitoring = False
             self.flush_buffer()  # Flush buffer when stopping
             self.append_output("Monitoring stopped")
