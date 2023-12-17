@@ -7,8 +7,20 @@ import os
 import logging
 from plyer import filechooser
 from PIL import Image, ImageTk
+import sys
 
 from tktooltip import ToolTip
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
 ctk.set_appearance_mode("dark")
 default_setting = {
     "folder": os.getcwd(),
@@ -88,9 +100,9 @@ class SettingsWindow:
         y_coordinate = (self.settings_window.winfo_screenheight() - settings_window_height) // 4
         self.settings_window.geometry(f"+{x_coordinate}+{y_coordinate}")
 
-        self.settings_window.after(201, lambda:self.settings_window.iconbitmap("Serial to CSV Beta 0.1\Smallicon.ico")) #To set the icon on "Setting" window
+        self.settings_window.after(201, lambda:self.settings_window.iconbitmap(resource_path("smallicon_setting.ico"))) #To set the icon on "Setting" window
 
-        # Folder Selection
+        # Folder Selection 
         self.folder_label = ctk.CTkLabel(self.settings_window, text="Select Folder Location:")
         self.folder_label.place(x=10,y=7)
         self.folder_var = ctk.StringVar()
@@ -228,7 +240,8 @@ class SerialMonitor:
         self.root.geometry(f"+{x_coordinate}+{y_coordinate}")
 
         self.root.resizable(False, False)
-        self.root.iconbitmap('Serial to CSV Beta 0.1\Smallicon.ico')
+        root.after(201, lambda:self.root.iconbitmap("SmallIcon.ico")) #To set the icon on "Help" window
+
 
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
@@ -371,19 +384,20 @@ class SerialMonitor:
         image = Image.open("HelpImage.png")
 
         # Convert the image to a format which Tkinter can use
-        photo = ImageTk.PhotoImage(image)
+        photo = ctk.CTkImage(light_image=image,size=image.size)
+        # photo = ImageTk.PhotoImage(image)
 
         # Create a new window or Use an existing widget to disply the image
         image_window = ctk.CTkToplevel(root)
         image_window.transient(self.root)
         image_window.grab_set()
         image_window.title("Help Image")
-        image_window.after(201, lambda:image_window.iconbitmap("Serial to CSV Beta 0.1\Smallicon.ico")) #To set the icon on "Help" window
+        image_window.after(201, lambda:image_window.iconbitmap("smallIcon.ico")) #To set the icon on "Help" window
         
         # Create a label in the new window to display the image
-        image_label = ctk.CTkLabel(image_window, image=photo)
-        image_label.image = photo # Keep a reference
-        image_label.pack()
+        image_label = ctk.CTkLabel(image_window, image=photo, text="")
+        # image_label.image = photo # Keep a reference
+        image_label.pack(fill=ctk.BOTH,expand=True)
 
     def com_port_clicked(self, choice):
         settings["com_port"] = choice
