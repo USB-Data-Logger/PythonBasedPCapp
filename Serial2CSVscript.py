@@ -72,13 +72,23 @@ class SettingsWindow:
         self.on_distroy = on_distroy
         self.settings_window = ctk.CTkToplevel(parent)
         self.settings_window.transient(self.parent)
-        if not os.name == "posix":
-            self.settings_window.grab_set()
+        # if not os.name == "posix":
+        #     self.settings_window.grab_set()
 
         self.settings_window.configure()
         self.settings_window.title("Settings")
-        self.settings_window.geometry("460x200")
+        # self.settings_window.geometry("460x200")
         self.settings_window.resizable(False, False)
+
+        settings_window_width = 460
+        settings_window_height = 200
+        self.settings_window.geometry(f"{settings_window_width}x{settings_window_height}")
+
+        x_coordinate = (self.settings_window.winfo_screenwidth() - settings_window_width) // 4
+        y_coordinate = (self.settings_window.winfo_screenheight() - settings_window_height) // 4
+        self.settings_window.geometry(f"+{x_coordinate}+{y_coordinate}")
+
+        self.settings_window.after(201, lambda:self.settings_window.iconbitmap("Serial to CSV Beta 0.1\Smallicon.ico")) #To set the icon on "Setting" window
 
         # Folder Selection
         self.folder_label = ctk.CTkLabel(self.settings_window, text="Select Folder Location:")
@@ -89,7 +99,7 @@ class SettingsWindow:
             width=210,
             textvariable=self.folder_var,)
         self.folder_entry.place(x=150,y=7)
-        ToolTip(self.folder_entry, msg=self.folder_var.get)
+        ToolTip(self.folder_entry, msg=self.folder_var.get, delay=0.2,bg='black', fg='white')
 
         self.browse_button = ctk.CTkButton(
             self.settings_window, text="Browse",
@@ -218,7 +228,7 @@ class SerialMonitor:
         self.root.geometry(f"+{x_coordinate}+{y_coordinate}")
 
         self.root.resizable(False, False)
-
+        self.root.iconbitmap('Serial to CSV Beta 0.1\Smallicon.ico')
 
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
@@ -279,7 +289,7 @@ class SerialMonitor:
         )
         self.combo_com_port.place(x=10,y=25)
         self.combo_com_port.set(settings["com_port"])
-        ToolTip(self.combo_com_port, msg="you can type custom com port number\n or path address in the window", bg='grey', fg='white')
+        ToolTip(self.combo_com_port, msg="you can type custom com port number\n or path address in the window", delay=0.2, bg='black', fg='white')
 
         self.combo_baud_rate = ctk.CTkComboBox(
             self.root,
@@ -288,7 +298,7 @@ class SerialMonitor:
         )
         self.combo_baud_rate.place(x=300,y=25)
         self.combo_baud_rate.set(settings["baud_rate"])
-        ToolTip(self.combo_baud_rate, msg="you can type custom value\nin the window if needed",bg='grey', fg='white',x_offset=-90)
+        ToolTip(self.combo_baud_rate, msg="you can type custom value\nin the window if needed", delay=0.2, bg='black', fg='white', x_offset=-90)
 
         ctk.CTkLabel(
             self.root,
@@ -353,7 +363,7 @@ class SerialMonitor:
 
         # Set the state of the ScrolledText widget to DISABLED
         self.output_window.configure(state=ctk.DISABLED)
-        ToolTip(self.output_window, msg="Message")
+        ToolTip(self.output_window, msg="Message", delay=0.2, bg='black', fg='white')
     
     # Function to open Help Image
     def open_help(self):
@@ -368,7 +378,8 @@ class SerialMonitor:
         image_window.transient(self.root)
         image_window.grab_set()
         image_window.title("Help Image")
-
+        image_window.after(201, lambda:image_window.iconbitmap("Serial to CSV Beta 0.1\Smallicon.ico")) #To set the icon on "Help" window
+        
         # Create a label in the new window to display the image
         image_label = ctk.CTkLabel(image_window, image=photo)
         image_label.image = photo # Keep a reference
