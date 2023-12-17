@@ -191,6 +191,8 @@ class SettingsWindow:
         )
         self.load_settings()
         self.settings_window.focus()
+        self.settings_window.wait_visibility()
+        self.settings_window.grab_set()
 
     def combo_format_selected(self, choice):
         global place_holder
@@ -427,7 +429,8 @@ class SerialMonitor:
         image_window.title("Help Image")
         image_window.wm_iconbitmap()
         image_window.after(300, lambda: image_window.iconphoto(False, self.icon_path))
-
+        image_window.wait_visibility()
+        image_window.grab_set()
         # Create a label in the new window to display the image
         image_label = ctk.CTkLabel(image_window, image=photo, text="")
         # image_label.image = photo # Keep a reference
