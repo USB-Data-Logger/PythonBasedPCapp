@@ -1,4 +1,5 @@
 import customtkinter as ctk
+
 import serial
 from serial.tools import list_ports
 from datetime import datetime
@@ -8,8 +9,8 @@ import logging
 from plyer import filechooser
 from tktooltip import ToolTip
 from PIL import Image
-from tkinter import PhotoImage
-
+from PIL import ImageTk
+import sys
 
 ctk.set_appearance_mode("dark")
 default_setting = {
@@ -20,6 +21,22 @@ default_setting = {
     "com_port": "COM7",
     "buffer_size": "10",
 }
+
+
+def resource_path(relative_path):
+    """Get absolute path to resource, works for dev and for PyInstaller"""
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+
+def get_resources(resource):
+    return resource_path(os.path.join(ASSET_PATH, resource))
+
 
 SETTINGS_FILE = "settings.json"
 ASSET_PATH = "asset"
@@ -34,8 +51,6 @@ file_name_template = {
 pad_x = 10
 pad_y = 10
 
-def get_resources(resource):
-    return os.path.join(ASSET_PATH, resource)
 
 def load_settings(settings_path):
     if os.path.isfile(settings_path):
@@ -85,7 +100,7 @@ class SettingsWindow:
         self.on_distroy = on_distroy
         self.settings_window = ctk.CTkToplevel(parent)
         self.settings_window.transient(self.parent)
-       
+
         self.settings_window.configure()
         self.settings_window.title("Settings")
         self.settings_window.geometry("460x200")
@@ -166,7 +181,16 @@ class SettingsWindow:
             command=self.settings_window.destroy,
         )
         self.discard_button.place(x=310, y=160)
+
+        self.settings_window.wm_iconbitmap()
+        self.settings_window.after(
+            300,
+            lambda: self.settings_window.iconphoto(
+                False, ImageTk.PhotoImage(Image.open(get_resources("Smallicon.png")))
+            ),
+        )
         self.load_settings()
+        self.settings_window.focus()
 
     def combo_format_selected(self, choice):
         global place_holder
@@ -242,8 +266,6 @@ class SerialMonitor:
 
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
-        self.icon_image = PhotoImage(file=get_resources("Smallicon.png")) 
-        self.root.wm_iconphoto(True, self.icon_image)
         self.root.configure()
 
         self.root.grid_columnconfigure((0), weight=1)
@@ -260,7 +282,10 @@ class SerialMonitor:
         self.buffer_flush_count = 0  # Variable to track buffer flush count
         self.output_message = ""
         self.file_path = settings["folder"]
+        self.icon_path = ImageTk.PhotoImage(Image.open(get_resources("Smallicon.png")))
 
+        self.root.wm_iconbitmap()
+        self.root.iconphoto(False, self.icon_path)
         self.init_ui()
         self.update_lbl_prefix()
 
@@ -400,6 +425,8 @@ class SerialMonitor:
         image_window = ctk.CTkToplevel(root)
         image_window.transient(self.root)
         image_window.title("Help Image")
+        image_window.wm_iconbitmap()
+        image_window.after(300, lambda: image_window.iconphoto(False, self.icon_path))
 
         # Create a label in the new window to display the image
         image_label = ctk.CTkLabel(image_window, image=photo, text="")
