@@ -4,3 +4,4 @@ tkinter-tooltip==2.2.0
 plyer==2.1.0
 packaging==23.2
 pillow==10.1.0 # To Open the PNG file
+pywin32==306
