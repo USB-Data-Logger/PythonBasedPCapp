@@ -96,7 +96,9 @@ def get_com_port():
 class SettingsWindow:
     def __init__(self, parent, on_distroy=None):
         self.parent = parent
-
+        # Load the settings icon image from chat gpt @2023-12-18 19.47
+        settings_icon_path = ImageTk.PhotoImage(Image.open(get_resources("smallicon_setting.ico")))
+        
         self.on_distroy = on_distroy
         self.settings_window = ctk.CTkToplevel(parent)
         self.settings_window.transient(self.parent)
@@ -105,6 +107,7 @@ class SettingsWindow:
         self.settings_window.title("Settings")
         self.settings_window.geometry("460x200")
         self.settings_window.resizable(False, False)
+        
 
 
 
@@ -188,9 +191,10 @@ class SettingsWindow:
         self.settings_window.after(
             300,
             lambda: self.settings_window.iconphoto(
-                False, ImageTk.PhotoImage(Image.open(get_resources("Smallicon.ico")))
+                False, settings_icon_path)
+                #ImageTk.PhotoImage(Image.open(get_resources("Smallicon.ico"))) past setup
             ),
-        )
+        
         self.load_settings()
         self.settings_window.focus()
         self.settings_window.wait_visibility()
