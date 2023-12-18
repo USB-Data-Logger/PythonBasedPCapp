@@ -420,6 +420,9 @@ class SerialMonitor:
 
     # Function to open Help Image
     def open_help(self):
+        # Load the help icon image #ChatGPT input @2023-12-18 19.41 
+        help_icon_path = ImageTk.PhotoImage(Image.open(get_resources("Smallicon_help.ico")))
+   
         # Load the PNG file
         image = Image.open(get_resources("HelpImage.png"))
         # Convert the image to a format which Tkinter can use
@@ -430,7 +433,10 @@ class SerialMonitor:
         image_window.transient(self.root)
         image_window.title("Help Image")
         image_window.wm_iconbitmap()
-        image_window.after(300, lambda: image_window.iconphoto(False, self.icon_path))
+        # Set the help window icon
+        #image_window.iconphoto(False, help_icon_path chat gpt input
+        
+        image_window.after(300, lambda: image_window.iconphoto(False, help_icon_path))
         image_window.wait_visibility()
         image_window.grab_set()
         # Create a label in the new window to display the image
