@@ -4,12 +4,10 @@ from serial.tools import list_ports
 from datetime import datetime
 import json
 import os
-import logging
-from tkinter import filedialog
+from plyer import filechooser
 from tktooltip import ToolTip
 from PIL import Image
 from PIL import ImageTk
-import sys
 
 ctk.set_appearance_mode("dark")
 default_setting = {
@@ -20,21 +18,6 @@ default_setting = {
     "com_port": "COM7",
     "buffer_size": "10",
 }
-
-
-def resource_path(relative_path):
-    """Get absolute path to resource, works for dev and for PyInstaller"""
-    try:
-        # PyInstaller creates a temp folder and stores path in _MEIPASS
-        base_path = sys._MEIPASS
-    except Exception:
-        base_path = os.path.abspath(".")
-
-    return os.path.join(base_path, relative_path)
-
-
-def get_resources(resource):
-    return resource_path(os.path.join(ASSET_PATH, resource))
 
 
 SETTINGS_FILE = "settings.json"
@@ -96,8 +79,9 @@ class SettingsWindow:
     def __init__(self, parent, on_distroy=None):
         self.parent = parent
         # Load the settings icon image from chat gpt @2023-12-18 19.47
-        settings_icon_path = ImageTk.PhotoImage(Image.open(get_resources("smallicon_setting.ico")))
-        
+        settings_icon_path = ImageTk.PhotoImage(
+            Image.open(("smallicon_setting.ico")))
+
         self.on_distroy = on_distroy
         self.settings_window = ctk.CTkToplevel(parent)
         self.settings_window.transient(self.parent)
@@ -106,9 +90,6 @@ class SettingsWindow:
         self.settings_window.title("Settings")
         self.settings_window.geometry("460x200")
         self.settings_window.resizable(False, False)
-        
-
-
 
         # Folder Selection
         self.folder_label = ctk.CTkLabel(
@@ -157,7 +138,8 @@ class SettingsWindow:
         ).place(x=150, y=80)
 
         # Buffer Size
-        self.buffer_label = ctk.CTkLabel(self.settings_window, text="Buffer Size:")
+        self.buffer_label = ctk.CTkLabel(
+            self.settings_window, text="Buffer Size:")
         self.buffer_label.place(x=20, y=110)
 
         self.buffer_var = ctk.StringVar()
@@ -191,9 +173,9 @@ class SettingsWindow:
             300,
             lambda: self.settings_window.iconphoto(
                 False, settings_icon_path)
-                #ImageTk.PhotoImage(Image.open(get_resources("Smallicon.ico"))) past setup
-            ),
-        
+
+        ),
+
         self.load_settings()
         self.settings_window.focus()
         self.settings_window.wait_visibility()
@@ -201,9 +183,11 @@ class SettingsWindow:
 
     def combo_format_selected(self, choice):
         global place_holder
-        foramtted_date = get_formatted_date(file_name_template.get(choice, choice))
+        foramtted_date = get_formatted_date(
+            file_name_template.get(choice, choice))
         if choice != "User Input":
-            self.file_template_render.set(foramtted_date + "[Optional suffix].csv")
+            self.file_template_render.set(
+                foramtted_date + "[Optional suffix].csv")
             place_holder = "Optional suffix"
         else:
             self.file_template_render.set(
@@ -226,7 +210,8 @@ class SettingsWindow:
             )
         )
         if settings["file_name_template"] != "User Input":
-            self.file_template_render.set(foramtted_date + "[Optional suffix].csv")
+            self.file_template_render.set(
+                foramtted_date + "[Optional suffix].csv")
         else:
             self.file_template_render.set(foramtted_date + ".csv")
 
@@ -234,8 +219,10 @@ class SettingsWindow:
         self.buffer_var.set(settings["buffer_size"])
 
     def browse_folder(self):
-        folder_selected = filedialog.askdirectory()   
-        if not  folder_selected :
+        folder_selected = filechooser.choose_dir()
+        if folder_selected:
+            folder_selected = folder_selected[0]
+        else:
             folder_selected = settings["folder"]
         if folder_selected:
             self.folder_var.set(folder_selected)
@@ -259,8 +246,11 @@ class SerialMonitor:
         self.root = root
         self.root.title("Serial to CSV")
 
+        self.message_label = ctk.CTkLabel(self.root, text="")
+
+        self.message_label.place(x=305, y=240)
         root_width = 450
-        root_height = 300
+        root_height = 450
         self.root.geometry(f"{root_width}x{root_height}")
 
         x_coordinate = (root.winfo_screenwidth() - root_width) // 2
@@ -287,7 +277,7 @@ class SerialMonitor:
         self.buffer_flush_count = 0  # Variable to track buffer flush count
         self.output_message = ""
         self.file_path = settings["folder"]
-        self.icon_path = ImageTk.PhotoImage(Image.open(get_resources("Smallicon.ico")))
+        self.icon_path = ImageTk.PhotoImage(Image.open(("Smallicon.ico")))
 
         self.root.wm_iconbitmap()
         self.root.iconphoto(False, self.icon_path)
@@ -314,6 +304,35 @@ class SerialMonitor:
         save_settings(SETTINGS_FILE, settings)
         self.save_log_file()
         self.root.destroy()
+
+    def open_search(self, event=None):
+        # Retrieve the search query
+        # Convert query to lowercase for case-insensitive search
+        query = self.search_entry.get().strip().lower()
+
+        # Retrieve the current content from the output window
+        # Retrieve all content from the output window
+        original_content = self.output_window.get("1.0", "end-1c")
+
+        # Clear the output window to display search results
+        self.output_window.configure(state=ctk.NORMAL)
+        self.output_window.delete("1.0", "end")
+
+        if not query:
+            # If the query is empty, restore the original content and exit
+            self.output_window.insert("1.0", original_content)
+            self.output_window.configure(state=ctk.DISABLED)
+            return
+
+        # Split the content into lines and filter lines containing the query
+        lines = original_content.split("\n")
+        filtered_lines = [line for line in lines if query in line.lower()]
+
+        # Display filtered lines in the output window
+        for line in filtered_lines:
+            self.output_window.insert("end", line + "\n")
+
+        self.output_window.configure(state=ctk.DISABLED)
 
     def init_ui(self):
         ctk.CTkLabel(self.root, text="COM Port:", font=("impack", 20, "bold")).place(
@@ -409,23 +428,121 @@ class SerialMonitor:
         self.output_window = ctk.CTkTextbox(
             self.root,
             width=430,
-            height=120,
+            height=170,
             fg_color="#0F0F0F",
             wrap=ctk.WORD,  # setting for how many line
         )
-        self.output_window.place(x=10, y=170)
+        self.output_window.place(x=10, y=270)
 
         # Set the state of the ScrolledText widget to DISABLED
         self.output_window.configure(state=ctk.DISABLED)
         ToolTip(self.output_window, msg="Message")
+        # Keyboard shortcuts
+        # Ctrl + S to save log
+        self.root.bind("<Control-s>", self.save_log_file)
+        # Ctrl + F to open search
+        self.root.bind("<Control-f>", self.open_search)
+
+        # Search/Filter Feature
+        self.search_entry = ctk.CTkEntry(
+            self.root)  # Initialize the search entry
+        self.search_entry.place(x=303, y=170)
+
+        # Assign tooltip after initializing self.search_entry
+        ToolTip(self.search_entry, msg="Enter your search query here.")
+
+        self.search_button = ctk.CTkButton(
+            self.root, text="Search", command=self.search_data)
+        self.search_button.place(x=305, y=210)
+        self.root.update()
+        # GUI Customization Options
+        self.font_label = ctk.CTkLabel(
+            self.root, text="Font:", font=("impack", 20, "bold"))
+        self.font_label.place(x=30, y=170)
+        self.font_var = ctk.StringVar()
+        self.font_combo = ctk.CTkComboBox(self.root, values=[
+                                          "Arial", "Times New Roman", "Calibri", "Verdana", "Helvetica", "Georgia"])
+        self.font_combo.place(x=10, y=200)
+
+        self.color_label = ctk.CTkLabel(
+            self.root, text="Color:", font=("impack", 20, "bold"))
+        self.color_label.place(x=190, y=170)
+        self.color_var = ctk.StringVar()
+        self.color_combo = ctk.CTkComboBox(
+            self.root, values=["Red", "Blue", "Green", "Yellow", "Purple", "Cyan", "Magenta", "Orange", "Brown"])
+        self.color_combo.place(x=157, y=200)
+
+    def search_data(self):
+        # Convert query to lowercase for case-insensitive search
+        query = self.search_entry.get().strip().lower()
+
+        # Retrieve all content from the output window
+        original_content = self.output_window.get("1.0", "end-1c")
+
+        # Clear the output window to display search results
+        self.output_window.configure(state=ctk.NORMAL)
+        self.output_window.delete("1.0", "end")
+
+        if not query:
+            # If the query is empty, restore the original content and exit
+            self.output_window.insert("1.0", original_content)
+            self.output_window.configure(state=ctk.DISABLED)
+            return
+
+        # Split the content into lines and filter lines containing the query
+        lines = original_content.split("\n")
+        filtered_lines = [line for line in lines if query in line.lower()]
+
+        if not filtered_lines:
+            # If no results are found, display a message
+            self.message_label.configure(text="Not found")
+        else:
+            # Display filtered lines in the output window
+            for line in filtered_lines:
+                self.output_window.insert("end", line + "\n")
+            self.message_label.config(text="")  # Clear any previous messages
+
+        self.output_window.configure(state=ctk.DISABLED)
+
+    def apply_customizations(self):
+        selected_font = self.font_var.get()
+        selected_color = self.color_var.get()
+
+        # Update font for specific GUI elements
+        self.lbl_prefix.configure(font=(selected_font, 15))
+        self.status_label.configure(font=(selected_font, 10))
+        self.output_window.configure(font=(selected_font, 10))
+
+        # Convert color name to hexadecimal (or RGB)
+        color_map = {
+            "Red": "#FF0000",
+            "Blue": "#0000FF",
+            "Green": "#00FF00",
+            "Yellow": "#FFFF00",
+            "Purple": "#800080",
+            "Cyan": "#00FFFF",
+            "Magenta": "#FF00FF",
+            "Orange": "#FFA500",
+            "Brown": "#A52A2A",
+        }
+
+        # Apply color to GUI components
+        if selected_color in color_map:
+            hex_color = color_map[selected_color]
+            self.lbl_prefix.configure(bg=hex_color)
+            self.status_label.configure(bg=hex_color)
+            self.output_window.configure(bg=hex_color)
+        else:
+            print(f"Unknown color: {selected_color}")
 
     # Function to open Help Image
+
     def open_help(self):
-        # Load the help icon image #ChatGPT input @2023-12-18 19.41 
-        help_icon_path = ImageTk.PhotoImage(Image.open(get_resources("Smallicon_help.ico")))
-   
+        # Load the help icon image #ChatGPT input @2023-12-18 19.41
+        help_icon_path = ImageTk.PhotoImage(Image.open(("Smallicon_help.ico")))
+
         # Load the PNG file
-        image = Image.open(get_resources("HelpImage.png"))
+        image = Image.open(("HelpImage.png"))
         # Convert the image to a format which Tkinter can use
         photo = ctk.CTkImage(light_image=image, size=image.size)
 
@@ -435,9 +552,10 @@ class SerialMonitor:
         image_window.title("Help Image")
         image_window.wm_iconbitmap()
         # Set the help window icon
-        #image_window.iconphoto(False, help_icon_path chat gpt input
-        
-        image_window.after(300, lambda: image_window.iconphoto(False, help_icon_path))
+        # image_window.iconphoto(False, help_icon_path chat gpt input
+
+        image_window.after(
+            300, lambda: image_window.iconphoto(False, help_icon_path))
         image_window.wait_visibility()
         image_window.grab_set()
         # Create a label in the new window to display the image
@@ -496,7 +614,8 @@ class SerialMonitor:
     def read_serial_data(self):
         if self.monitoring and self.serial_port and self.serial_port.is_open:
             data = self.serial_port.readline()
-            timestamped_data = f"{datetime.now().strftime('%Y-%m-%d,%H:%M:%S.%f')[:-3]}, {data.decode().strip()}\n"
+            timestamped_data = f"{datetime.now().strftime(
+                '%Y-%m-%d,%H:%M:%S.%f')[:-3]}, {data.decode().strip()}\n"
             self.data_buffer.append(timestamped_data)
 
             if len(self.data_buffer) >= int(settings["buffer_size"]):
@@ -515,7 +634,8 @@ class SerialMonitor:
         self.total_row_count += 1
 
     def update_output(self):
-        text = f"Row Count = {self.total_row_count}, Buffer Flush = {self.buffer_flush_count}"
+        text = f"Row Count = {self.total_row_count}, Buffer Flush = {
+            self.buffer_flush_count}"
         self.replace_output(self.output_message + text)
 
     def get_file_name(self, ext=".csv"):
@@ -528,17 +648,21 @@ class SerialMonitor:
 
     def replace_output(self, new_text, end="\n"):
         """Replace the entire content of the output window."""
-        self.output_window.configure(state=ctk.NORMAL)  # Enable editing to replace text
+        self.output_window.configure(
+            state=ctk.NORMAL)  # Enable editing to replace text
         self.output_window.delete(1.0, ctk.END)  # Delete existing content
         self.output_window.insert(ctk.END, new_text + end)  # Insert new text
-        self.output_window.configure(state=ctk.DISABLED)  # Disable editing again
+        self.output_window.configure(
+            state=ctk.DISABLED)  # Disable editing again
         self.output_window.see(ctk.END)  # Scroll to the end
 
     def append_output(self, text, end="\n"):
         """Append text to the output window."""
-        self.output_window.configure(state=ctk.NORMAL)  # Enable editing to append text
+        self.output_window.configure(
+            state=ctk.NORMAL)  # Enable editing to append text
         self.output_window.insert(ctk.END, text + end)  # Append text
-        self.output_window.configure(state=ctk.DISABLED)  # Disable editing again
+        self.output_window.configure(
+            state=ctk.DISABLED)  # Disable editing again
         self.output_window.see(ctk.END)  # Scroll to the end
 
 
