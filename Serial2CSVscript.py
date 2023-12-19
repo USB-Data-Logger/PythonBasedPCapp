@@ -1,12 +1,11 @@
 import customtkinter as ctk
-
 import serial
 from serial.tools import list_ports
 from datetime import datetime
 import json
 import os
 import logging
-from plyer import filechooser
+from tkinter import filedialog
 from tktooltip import ToolTip
 from PIL import Image
 from PIL import ImageTk
@@ -235,10 +234,8 @@ class SettingsWindow:
         self.buffer_var.set(settings["buffer_size"])
 
     def browse_folder(self):
-        folder_selected = filechooser.choose_dir()
-        if folder_selected:
-            folder_selected = folder_selected[0]
-        else:
+        folder_selected = filedialog.askdirectory()   
+        if not  folder_selected :
             folder_selected = settings["folder"]
         if folder_selected:
             self.folder_var.set(folder_selected)
