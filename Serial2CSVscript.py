@@ -11,6 +11,8 @@ from PIL import Image
 from PIL import ImageTk
 import sys
 
+import threading
+
 ctk.set_appearance_mode("dark")
 default_setting = {
     "folder": os.getcwd(),
@@ -92,12 +94,35 @@ def get_com_port():
     return com_ports
 
 
+class SerialCommunicator:
+    def __init__(self):
+        self.serial_port = None
+        self.stop_thread = False
+
+    def open_serial_port(self, port, baudrate):
+        try:
+            self.serial_port = serial.Serial(port, baudrate, timeout=1)
+        except serial.SerialException as e:
+            raise RuntimeError(f"Error opening serial port: {e}")
+
+    def close_serial_port(self):
+        if self.serial_port:
+            self.serial_port.close()
+
+    def read_line(self):
+        if self.serial_port:
+            return self.serial_port.readline().decode("utf-8").strip()
+        return ""
+
+
 class SettingsWindow:
     def __init__(self, parent, on_distroy=None):
         self.parent = parent
         # Load the settings icon image from chat gpt @2023-12-18 19.47
-        settings_icon_path = ImageTk.PhotoImage(Image.open(get_resources("smallicon_setting.ico")))
-        
+        settings_icon_path = ImageTk.PhotoImage(
+            Image.open(get_resources("smallicon_setting.ico"))
+        )
+
         self.on_distroy = on_distroy
         self.settings_window = ctk.CTkToplevel(parent)
         self.settings_window.transient(self.parent)
@@ -106,9 +131,6 @@ class SettingsWindow:
         self.settings_window.title("Settings")
         self.settings_window.geometry("460x200")
         self.settings_window.resizable(False, False)
-        
-
-
 
         # Folder Selection
         self.folder_label = ctk.CTkLabel(
@@ -189,11 +211,10 @@ class SettingsWindow:
         self.settings_window.wm_iconbitmap()
         self.settings_window.after(
             300,
-            lambda: self.settings_window.iconphoto(
-                False, settings_icon_path)
-                #ImageTk.PhotoImage(Image.open(get_resources("Smallicon.ico"))) past setup
-            ),
-        
+            lambda: self.settings_window.iconphoto(False, settings_icon_path)
+            # ImageTk.PhotoImage(Image.open(get_resources("Smallicon.ico"))) past setup
+        ),
+
         self.load_settings()
         self.settings_window.focus()
         self.settings_window.wait_visibility()
@@ -234,8 +255,8 @@ class SettingsWindow:
         self.buffer_var.set(settings["buffer_size"])
 
     def browse_folder(self):
-        folder_selected = filedialog.askdirectory()   
-        if not  folder_selected :
+        folder_selected = filedialog.askdirectory()
+        if not folder_selected:
             folder_selected = settings["folder"]
         if folder_selected:
             self.folder_var.set(folder_selected)
@@ -252,6 +273,8 @@ class SettingsWindow:
 
 class SerialMonitor:
     def __init__(self, root):
+        self.serial_communicator = SerialCommunicator()
+        self.serial_thread = None
         self.data_buffer = []
         self.buffer_limit = int(
             settings["buffer_size"]
@@ -313,6 +336,9 @@ class SerialMonitor:
         settings["suffix"] = self.file_suffix_entry.get()
         save_settings(SETTINGS_FILE, settings)
         self.save_log_file()
+        if self.serial_thread:
+            self.stop_logging_thread()
+            self.serial_communicator.close_serial_port()
         self.root.destroy()
 
     def init_ui(self):
@@ -421,9 +447,11 @@ class SerialMonitor:
 
     # Function to open Help Image
     def open_help(self):
-        # Load the help icon image #ChatGPT input @2023-12-18 19.41 
-        help_icon_path = ImageTk.PhotoImage(Image.open(get_resources("Smallicon_help.ico")))
-   
+        # Load the help icon image #ChatGPT input @2023-12-18 19.41
+        help_icon_path = ImageTk.PhotoImage(
+            Image.open(get_resources("Smallicon_help.ico"))
+        )
+
         # Load the PNG file
         image = Image.open(get_resources("HelpImage.png"))
         # Convert the image to a format which Tkinter can use
@@ -435,8 +463,8 @@ class SerialMonitor:
         image_window.title("Help Image")
         image_window.wm_iconbitmap()
         # Set the help window icon
-        #image_window.iconphoto(False, help_icon_path chat gpt input
-        
+        # image_window.iconphoto(False, help_icon_path chat gpt input
+
         image_window.after(300, lambda: image_window.iconphoto(False, help_icon_path))
         image_window.wait_visibility()
         image_window.grab_set()
@@ -459,6 +487,21 @@ class SerialMonitor:
         self.file_suffix_entry.configure(placeholder_text=place_holder)
         self.update_lbl_prefix()
 
+    def open_serial_port(self):
+        self.serial_communicator.open_serial_port(
+            settings["com_port"],
+            int(settings["baud_rate"]),
+        )
+
+    def create_logging_thread(self):
+        self.serial_communicator.stop_thread = False
+        self.serial_thread = threading.Thread(target=self.serial_reader)
+        self.serial_thread.start()
+
+    def stop_logging_thread(self):
+        self.serial_communicator.stop_thread = True
+        self.serial_thread.join()
+
     def toggle_monitoring(self):
         settings["com_port"] = self.combo_com_port.get()
         settings["baud_rate"] = self.combo_baud_rate.get()
@@ -467,17 +510,17 @@ class SerialMonitor:
             self.file_name = self.get_file_name()  # Update the file name
             self.file_path = os.path.join(settings["folder"], self.file_name)
             try:
-                self.serial_port = serial.Serial(
-                    settings["com_port"], int(settings["baud_rate"]), timeout=1
-                )
+                self.open_serial_port()
+                self.create_logging_thread()
                 self.start_stop_button.configure(text="Stop Monitoring")
                 self.monitoring = True
+
                 self.append_output(
                     f"Monitoring started, saving to {self.file_name}", end=""
                 )
                 self.output_message = self.output_window.get(1.0, ctk.END)
-                self.read_serial_data()
-            except serial.SerialException as e:
+                self.root.after(100, self.update_output)
+            except Exception as e:
                 self.append_output(f"Error: {e}")
         else:
             # Stop monitoring
@@ -485,25 +528,31 @@ class SerialMonitor:
             if self.serial_port and self.serial_port.is_open:
                 self.serial_port.close()
             self.start_stop_button.configure(text="Start Monitoring")
-            self.monitoring = False
+
+            self.stop_logging_thread()
+            self.serial_communicator.close_serial_port()
             self.flush_buffer()  # Flush buffer when stopping
+            self.update_output()
+            self.monitoring = False
             self.append_output("Monitoring stopped")
             self.append_output(f"Data saved to {self.file_name}")
             self.total_row_count = 0
             self.buffer_flush_count = 0
             self.output_message = self.output_window.get(1.0, ctk.END)
 
-    def read_serial_data(self):
-        if self.monitoring and self.serial_port and self.serial_port.is_open:
-            data = self.serial_port.readline()
-            timestamped_data = f"{datetime.now().strftime('%Y-%m-%d,%H:%M:%S.%f')[:-3]}, {data.decode().strip()}\n"
-            self.data_buffer.append(timestamped_data)
+    def serial_reader(self):
+        while not self.serial_communicator.stop_thread:
+            line = self.serial_communicator.read_line()
+            if line:
+                timestamped_data = (
+                    f"{datetime.now().strftime('%Y-%m-%d,%H:%M:%S.%f')[:-3]},{line}\n"
+                )
+                self.data_buffer.append(timestamped_data)
 
-            if len(self.data_buffer) >= int(settings["buffer_size"]):
-                self.flush_buffer()
-            self.update_row_count()
-            self.update_output()
-            self.root.after(100, self.read_serial_data)
+                if len(self.data_buffer) >= int(settings["buffer_size"]):
+                    self.flush_buffer()
+                self.total_row_count += 1
+
 
     def flush_buffer(self):
         with open(self.file_path, "a") as file:
@@ -511,12 +560,11 @@ class SerialMonitor:
         self.data_buffer.clear()  # Clear the buffer after flushing
         self.buffer_flush_count += 1  # Increment buffer flush count
 
-    def update_row_count(self):
-        self.total_row_count += 1
-
     def update_output(self):
-        text = f"Row Count = {self.total_row_count}, Buffer Flush = {self.buffer_flush_count}"
-        self.replace_output(self.output_message + text)
+        if self.monitoring:
+            text = f"Row Count = {self.total_row_count}, Buffer Flush = {self.buffer_flush_count}"
+            self.replace_output(self.output_message + text)
+            self.root.after(100, self.update_output)
 
     def get_file_name(self, ext=".csv"):
         template = settings["file_name_template"]
