@@ -20,4 +20,3 @@ class SerialCommunicator:
         if self.serial_port:
             return self.serial_port.readline().decode("utf-8").strip()
         return ""
-

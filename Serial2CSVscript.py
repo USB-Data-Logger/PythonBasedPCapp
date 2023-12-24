@@ -6,6 +6,7 @@ from tktooltip import ToolTip
 from libs.utils import get_icon
 from libs.utils import get_formatted_date
 from libs.utils import resource_path
+from libs.utils import get_com_port
 from libs import constants
 from libs.serial_monitor import SerialCommunicator
 from libs import settings as st
@@ -16,19 +17,9 @@ from PIL import Image
 import threading
 
 
+PAD_X = 10
+PAD_y = 10
 
-
-
-pad_x = 10
-pad_y = 10
-
-
-
-def get_com_port(settings):
-    com_ports = [f"COM{i}" for i in range(10)]
-    if not settings["com_port"] in com_ports:
-        com_ports.append(settings["com_port"])
-    return com_ports
 
 
 class SerialMonitor:
@@ -39,10 +30,10 @@ class SerialMonitor:
 
         self.settings = st.load_settings(constants.SETTINGS_FILE)
         self.place_holder = (
-        "Enter File name"
-        if self.settings["file_name_template"] == "User Input"
-        else "Optional suffix"
-            )
+            "Enter File name"
+            if self.settings["file_name_template"] == "User Input"
+            else "Optional suffix"
+        )
 
         ctk.set_appearance_mode(self.settings.get("theme", "dark"))
 
@@ -52,12 +43,10 @@ class SerialMonitor:
         self.root = root
         self.root.title("Serial to CSV")
 
-        root_width = 450
-        root_height = 300
-        self.root.geometry(f"{root_width}x{root_height}")
+        self.root.geometry(constants.MAIN_WINDOW_GEOMETRY)
 
-        x_coordinate = (root.winfo_screenwidth() - root_width) // 2
-        y_coordinate = (root.winfo_screenheight() - root_height) // 2
+        x_coordinate = (root.winfo_screenwidth() - constants.MAIN_WINDOW_WIDTH) // 2
+        y_coordinate = (root.winfo_screenheight() - constants.MAIN_WINDO_HEIGHT) // 2
         self.root.geometry(f"+{x_coordinate}+{y_coordinate}")
 
         self.root.resizable(False, False)
@@ -96,7 +85,8 @@ class SerialMonitor:
             text=(
                 get_formatted_date(
                     constants.FILE_NAME_TEMPLATE.get(
-                        self.settings["file_name_template"], self.settings["file_name_template"]
+                        self.settings["file_name_template"],
+                        self.settings["file_name_template"],
                     )
                 )
             )
@@ -218,10 +208,12 @@ class SerialMonitor:
     # Function to open Help Image
     def open_help(self):
         # Load the help icon image #ChatGPT input @2023-12-18 19.41
-        help_icon_path = get_icon(path.join(constants.ASSET_PATH,"Smallicon_help.ico"))
+        help_icon_path = get_icon(path.join(constants.ASSET_PATH, "Smallicon_help.ico"))
 
         # Load the PNG file
-        image = Image.open(resource_path(path.join(constants.ASSET_PATH,"HelpImage.png")))
+        image = Image.open(
+            resource_path(path.join(constants.ASSET_PATH, "HelpImage.png"))
+        )
         # Convert the image to a format which Tkinter can use
         photo = ctk.CTkImage(light_image=image, size=image.size)
 
@@ -230,15 +222,16 @@ class SerialMonitor:
         image_window.transient(self.root)
         image_window.title("Help Image")
         image_window.wm_iconbitmap()
-        # Set the help window icon
-        # image_window.iconphoto(False, help_icon_path chat gpt input
 
+        # Set the help window icon
+        #https://github.com/TomSchimansky/CustomTkinter/issues/2160
         image_window.after(300, lambda: image_window.iconphoto(False, help_icon_path))
         image_window.wait_visibility()
         image_window.grab_set()
+
         # Create a label in the new window to display the image
         image_label = ctk.CTkLabel(image_window, image=photo, text="")
-        # image_label.image = photo # Keep a reference
+
         image_label.pack(fill=ctk.BOTH, expand=True)
 
     def com_port_clicked(self, choice):
@@ -248,7 +241,9 @@ class SerialMonitor:
         self.settings["baud_rate"] = choice
 
     def open_settings(self):
-        self.settings_window = SettingsWindow(self.root,self.settings ,self.settings_window_distroy)
+        self.settings_window = SettingsWindow(
+            self.root, self.settings, self.settings_window_distroy
+        )
 
     def settings_window_distroy(self):
         self.settings = self.settings_window.settings

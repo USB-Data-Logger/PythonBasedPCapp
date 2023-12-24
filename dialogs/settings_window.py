@@ -1,4 +1,3 @@
-
 from os import path
 
 
@@ -6,18 +5,18 @@ import customtkinter as ctk
 from tktooltip import ToolTip
 from tkinter import filedialog
 
-from libs.utils import get_icon 
+from libs.utils import get_icon
 from libs.utils import get_formatted_date
 from libs import constants
 
 
 class SettingsWindow:
-    def __init__(self, parent,settings, on_distroy=None):
+    def __init__(self, parent, settings, on_distroy=None):
         self.parent = parent
 
         self.place_holder = "Optional suffix"
-        settings_icon = get_icon(path.join(constants.ASSET_PATH,"Smallicon_help.ico"))
-        self.settings = settings 
+        settings_icon = get_icon(path.join(constants.ASSET_PATH, "Smallicon_help.ico"))
+        self.settings = settings
         self.on_distroy = on_distroy
         self.settings_window = ctk.CTkToplevel(parent)
         self.settings_window.transient(self.parent)
@@ -105,8 +104,7 @@ class SettingsWindow:
 
         self.settings_window.wm_iconbitmap()
         self.settings_window.after(
-            300,
-            lambda: self.settings_window.iconphoto(False, settings_icon)
+            300, lambda: self.settings_window.iconphoto(False, settings_icon)
         ),
 
         self.load_settings()
@@ -115,8 +113,9 @@ class SettingsWindow:
         self.settings_window.grab_set()
 
     def combo_format_selected(self, choice):
-    
-        foramtted_date = get_formatted_date(constants.FILE_NAME_TEMPLATE.get(choice, choice))
+        foramtted_date = get_formatted_date(
+            constants.FILE_NAME_TEMPLATE.get(choice, choice)
+        )
         if choice != "User Input":
             self.file_template_render.set(foramtted_date + "[Optional suffix].csv")
             self.place_holder = "Optional suffix"
@@ -163,4 +162,3 @@ class SettingsWindow:
         if self.on_distroy:
             self.on_distroy()
         self.settings_window.destroy()
-

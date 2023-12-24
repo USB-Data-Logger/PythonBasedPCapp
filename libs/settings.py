@@ -1,4 +1,4 @@
-import os 
+import os
 import json
 
 default_setting = {
@@ -23,5 +23,5 @@ def load_settings(settings_path):
 
 
 def save_settings(settings_file, settings):
-    with open(settings_file,"w") as f:
+    with open(settings_file, "w") as f:
         json.dump(settings, f, indent=4)
