@@ -1,12 +1,10 @@
 from os import path
-
+from tkinter import filedialog
 
 import customtkinter as ctk
 from tktooltip import ToolTip
-from tkinter import filedialog
 
-from libs.utils import get_icon
-from libs.utils import get_formatted_date
+from libs.utils import get_formatted_date, get_icon
 from libs import constants
 
 

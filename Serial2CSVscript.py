@@ -1,25 +1,27 @@
-import customtkinter as ctk
-from datetime import datetime
 import os
+from datetime import datetime
 from os import path
-from tktooltip import ToolTip
-from libs.utils import get_icon
-from libs.utils import get_formatted_date
-from libs.utils import resource_path
-from libs.utils import get_com_port
-from libs import constants
-from libs.serial_monitor import SerialCommunicator
-from libs import settings as st
-from dialogs.settings_window import SettingsWindow
+import threading
 
 from PIL import Image
+from tktooltip import ToolTip
+import customtkinter as ctk
 
-import threading
+from libs.utils import (
+    get_icon,
+    get_formatted_date,
+    resource_path,
+    get_com_port,
+)
+from libs import constants
+from libs import settings as st
+
+from libs.serial_monitor import SerialCommunicator
+from dialogs.settings_window import SettingsWindow
 
 
 PAD_X = 10
 PAD_y = 10
-
 
 
 class SerialMonitor:
@@ -224,7 +226,7 @@ class SerialMonitor:
         image_window.wm_iconbitmap()
 
         # Set the help window icon
-        #https://github.com/TomSchimansky/CustomTkinter/issues/2160
+        # https://github.com/TomSchimansky/CustomTkinter/issues/2160
         image_window.after(300, lambda: image_window.iconphoto(False, help_icon_path))
         image_window.wait_visibility()
         image_window.grab_set()
