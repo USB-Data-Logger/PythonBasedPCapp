@@ -254,13 +254,13 @@ class SerialMonitor:
                 self.start_stop_button.configure(text="Stop Monitoring")
                 self.monitoring = True
 
-                self.append_output(
-                    f"Monitoring started, saving to {self.file_name}", end=""
+                self.replace_output(
+                    f"Monitoring started, saving to {self.file_name}", end="",mode="a"
                 )
                 self.output_message = self.output_window.get(1.0, ctk.END)
                 self.root.after(100, self.update_output)
             except Exception as e:
-                self.append_output(f"Error: {e}")
+                self.replace_output(f"Error: {e}",mode="a")
         else:
             # Stop monitoring
 
@@ -273,8 +273,8 @@ class SerialMonitor:
             self.flush_buffer()  # Flush buffer when stopping
             self.update_output()
             self.monitoring = False
-            self.append_output("Monitoring stopped")
-            self.append_output(f"Data saved to {self.file_name}")
+            self.replace_output("Monitoring stopped",mode="a")
+            self.replace_output(f"Data saved to {self.file_name}",mode="a")
             self.total_row_count = 0
             self.buffer_flush_count = 0
             self.output_message = self.output_window.get(1.0, ctk.END)
@@ -311,18 +311,14 @@ class SerialMonitor:
         )
         return f"{current_time}{ext}"
 
-    def replace_output(self, new_text, end="\n"):
+    def replace_output(self, text, end="\n",mode="w"):
         """Replace the entire content of the output window."""
         self.output_window.configure(state=ctk.NORMAL)  # Enable editing to replace text
-        self.output_window.delete(1.0, ctk.END)  # Delete existing content
-        self.output_window.insert(ctk.END, new_text + end)  # Insert new text
-        self.output_window.configure(state=ctk.DISABLED)  # Disable editing again
-        self.output_window.see(ctk.END)  # Scroll to the end
-
-    def append_output(self, text, end="\n"):
-        """Append text to the output window."""
-        self.output_window.configure(state=ctk.NORMAL)  # Enable editing to append text
-        self.output_window.insert(ctk.END, text + end)  # Append text
+        if mode == "w":
+            self.output_window.delete(1.0, ctk.END)  # Delete existing content
+            self.output_window.insert(ctk.END, text + end)  # Insert new text
+        else:
+            self.output_window.insert(ctk.END, text + end)  # Append text
         self.output_window.configure(state=ctk.DISABLED)  # Disable editing again
         self.output_window.see(ctk.END)  # Scroll to the end
 
