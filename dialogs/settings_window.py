@@ -13,7 +13,7 @@ class SettingsWindow:
         self.parent = parent
 
         self.place_holder = "Optional suffix"
-        settings_icon = get_icon(path.join(constants.ASSET_PATH, "Smallicon_help.ico"))
+        settings_icon = get_icon(path.join(constants.ASSET_PATH, "smallicon_setting.ico"))
         self.settings = settings
         self.on_distroy = on_distroy
         self.settings_window = ctk.CTkToplevel(parent)
