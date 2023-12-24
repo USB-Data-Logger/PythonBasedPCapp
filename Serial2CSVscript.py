@@ -18,7 +18,7 @@ from libs import settings as st
 
 from libs.serial_communicator import SerialCommunicator
 from dialogs.settings_window import SettingsWindow
-
+from dialogs.help_window import HelpWindow
 
 PAD_X = 10
 PAD_y = 10
@@ -175,7 +175,7 @@ class SerialMonitor:
             text="Help",
             fg_color="#0F0F0F",
             hover_color="#474747",
-            command=self.open_help,
+            command=lambda :HelpWindow(self.root),
         )
 
         self.help_btn.place(x=360, y=90)
@@ -208,34 +208,6 @@ class SerialMonitor:
         ToolTip(self.output_window, msg="Message")
 
     # Function to open Help Image
-    def open_help(self):
-        # Load the help icon image #ChatGPT input @2023-12-18 19.41
-        help_icon_path = get_icon(path.join(constants.ASSET_PATH, "Smallicon_help.ico"))
-
-        # Load the PNG file
-        image = Image.open(
-            resource_path(path.join(constants.ASSET_PATH, "HelpImage.png"))
-        )
-        # Convert the image to a format which Tkinter can use
-        photo = ctk.CTkImage(light_image=image, size=image.size)
-
-        # Create a new window or Use an existing widget to disply the image
-        image_window = ctk.CTkToplevel(root)
-        image_window.transient(self.root)
-        image_window.title("Help Image")
-        image_window.wm_iconbitmap()
-
-        # Set the help window icon
-        # https://github.com/TomSchimansky/CustomTkinter/issues/2160
-        image_window.after(300, lambda: image_window.iconphoto(False, help_icon_path))
-        image_window.wait_visibility()
-        image_window.grab_set()
-
-        # Create a label in the new window to display the image
-        image_label = ctk.CTkLabel(image_window, image=photo, text="")
-
-        image_label.pack(fill=ctk.BOTH, expand=True)
-
     def com_port_clicked(self, choice):
         self.settings["com_port"] = choice
 
