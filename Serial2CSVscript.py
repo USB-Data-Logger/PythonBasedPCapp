@@ -16,7 +16,7 @@ from libs.utils import (
 from libs import constants
 from libs import settings as st
 
-from libs.serial_monitor import SerialCommunicator
+from libs.serial_communicator import SerialCommunicator
 from dialogs.settings_window import SettingsWindow
 
 
