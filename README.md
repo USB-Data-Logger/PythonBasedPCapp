@@ -1,5 +1,5 @@
 # Python Based PC App
-In this repo  I will upload a basic stand alone app that is made in Python using chatgpt &amp; other programers 
+Serial2csv is an elegantly streamlined application designed for efficiently logging data from a serial port, offering a minimalist approach without unnecessary bloat.
 
 # Run
 
