@@ -286,7 +286,7 @@ class SerialMonitor:
             if line:
                 current_time = datetime.now()
                 elapsed_time = current_time - starting_time
-                timestamped_data = f"{current_time.strftime('%Y-%m-%d,%H:%M:%S.%f')[:-3]},{str(elapsed_time)[:-3]}{line}\n"
+                timestamped_data = f"{current_time.strftime('%Y-%m-%d,%H:%M:%S.%f')[:-3]},{str(elapsed_time)[:-3]},{line}\n"
                 self.data_buffer.append(timestamped_data)
                 if len(self.data_buffer) >= int(self.settings["buffer_size"]):
                     self.flush_buffer()
