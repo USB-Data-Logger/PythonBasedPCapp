@@ -82,10 +82,10 @@ class SettingsWindow:
         self.buffer_entry.place(x=150, y=110)
 
         #check box Merge Date and Time
-        self.chk_merge_date_time_var = ctk.StringVar(value="on")
+        self.chk_merge_date_time_var = ctk.StringVar(value=self.settings["time_format"])
         self.chk_merge_date_time = ctk.CTkCheckBox(self.settings_window , text = "Merge Date And Time",
-                                                   variable=self.chk_merge_date_time_var,offvalue="off",
-                                                   onvalue="on")
+                                                   variable=self.chk_merge_date_time_var,offvalue="%Y-%m-%d,%H:%M:%S.%f",
+                                                   onvalue="%Y-%m-%d_%H:%M:%S.%f")
         self.chk_merge_date_time.place(x=20,y=150)
 
 
@@ -166,6 +166,7 @@ class SettingsWindow:
         self.settings["file_name_template"] = self.combo_format.get()
 
         self.settings["buffer_size"] = self.buffer_var.get()
+        self.settings["time_format"] = self.chk_merge_date_time.get()
         if self.on_distroy:
             self.on_distroy()
         self.settings_window.destroy()
