@@ -81,6 +81,15 @@ class SettingsWindow:
         )
         self.buffer_entry.place(x=150, y=110)
 
+        #check box Merge Date and Time
+        self.chk_merge_date_time_var = ctk.StringVar(value="on")
+        self.chk_merge_date_time = ctk.CTkCheckBox(self.settings_window , text = "Merge Date And Time",
+                                                   variable=self.chk_merge_date_time_var,offvalue="off",
+                                                   onvalue="on")
+        self.chk_merge_date_time.place(x=20,y=150)
+
+
+
         # Save and Exit Button
         self.save_and_exit_btn = ctk.CTkButton(
             self.settings_window,
@@ -89,7 +98,7 @@ class SettingsWindow:
             hover_color="#474747",
             command=self.settings_ok,
         )
-        self.save_and_exit_btn.place(x=150, y=160)
+        self.save_and_exit_btn.place(x=150, y=170)
 
         self.discard_button = ctk.CTkButton(
             self.settings_window,
