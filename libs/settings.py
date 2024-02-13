@@ -9,6 +9,7 @@ default_setting = {
     "com_port": "COM7",
     "buffer_size": "10",
     "theme": "dark",
+    "time_format":"%Y-%m-%d_%H:%M:%S.%f", # %Y-%m-%d,%H:%M:%S.%f date and time in seperated column
 }
 
 
