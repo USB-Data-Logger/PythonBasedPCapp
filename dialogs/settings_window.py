@@ -77,16 +77,17 @@ class SettingsWindow:
         self.buffer_var = ctk.StringVar()
 
         self.buffer_entry = ctk.CTkEntry(
-            self.settings_window, textvariable=self.buffer_var
+            self.settings_window, textvariable=self.buffer_var,
+            width=100
         )
         self.buffer_entry.place(x=150, y=110)
 
         #check box Merge Date and Time
         self.chk_merge_date_time_var = ctk.StringVar(value=self.settings["time_format"])
-        self.chk_merge_date_time = ctk.CTkCheckBox(self.settings_window , text = "Merge Date And Time",
+        self.chk_merge_date_time = ctk.CTkCheckBox(self.settings_window , text = "Merge Date & Time",
                                                    variable=self.chk_merge_date_time_var,offvalue="%Y-%m-%d,%H:%M:%S.%f",
                                                    onvalue="%Y-%m-%d_%H:%M:%S.%f")
-        self.chk_merge_date_time.place(x=20,y=150)
+        self.chk_merge_date_time.place(x=264,y=110)
 
 
 
@@ -98,7 +99,7 @@ class SettingsWindow:
             hover_color="#474747",
             command=self.settings_ok,
         )
-        self.save_and_exit_btn.place(x=150, y=170)
+        self.save_and_exit_btn.place(x=150, y=160)
 
         self.discard_button = ctk.CTkButton(
             self.settings_window,
