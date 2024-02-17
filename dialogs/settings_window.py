@@ -4,9 +4,8 @@ from tkinter import filedialog
 import customtkinter as ctk
 from tktooltip import ToolTip
 
-from libs.utils import get_formatted_date, get_icon
+from libs.utils import get_formatted_date, get_icon , filter_digit
 from libs import constants
-
 
 class SettingsWindow:
     def __init__(self, parent, settings, on_distroy=None):
@@ -76,17 +75,22 @@ class SettingsWindow:
 
         self.buffer_var = ctk.StringVar()
 
+        validate_cmd = (self.settings_window.register(self.buffer_size_filter),
+                '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
+        
         self.buffer_entry = ctk.CTkEntry(
-            self.settings_window, textvariable=self.buffer_var
-        )
+            self.settings_window, textvariable=self.buffer_var,
+            width=100,
+            validate = 'key', validatecommand = validate_cmd)
+
         self.buffer_entry.place(x=150, y=110)
 
         #check box Merge Date and Time
         self.chk_merge_date_time_var = ctk.StringVar(value=self.settings["time_format"])
-        self.chk_merge_date_time = ctk.CTkCheckBox(self.settings_window , text = "Merge Date And Time",
+        self.chk_merge_date_time = ctk.CTkCheckBox(self.settings_window , text = "Merge Date & Time",
                                                    variable=self.chk_merge_date_time_var,offvalue="%Y-%m-%d,%H:%M:%S.%f",
                                                    onvalue="%Y-%m-%d_%H:%M:%S.%f")
-        self.chk_merge_date_time.place(x=20,y=150)
+        self.chk_merge_date_time.place(x=264,y=110)
 
 
 
@@ -98,7 +102,7 @@ class SettingsWindow:
             hover_color="#474747",
             command=self.settings_ok,
         )
-        self.save_and_exit_btn.place(x=150, y=170)
+        self.save_and_exit_btn.place(x=150, y=160)
 
         self.discard_button = ctk.CTkButton(
             self.settings_window,
@@ -170,3 +174,8 @@ class SettingsWindow:
         if self.on_distroy:
             self.on_distroy()
         self.settings_window.destroy()
+
+
+
+    def buffer_size_filter(self,*args):
+        return filter_digit(args[2])

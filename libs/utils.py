@@ -33,3 +33,9 @@ def get_formatted_date(format_str, suffix=""):
 
 def get_icon(icon_path):
     return ImageTk.PhotoImage(Image.open(resource_path(icon_path)))
+
+def filter_digit(data):
+    for i in data:
+        if not i.isdigit():
+            return False
+    return True
